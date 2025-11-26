@@ -2,9 +2,7 @@ import { z } from "zod";
 
 export const logSchema = z.object({
   id: z.string().optional(),
-  date: z.date({
-    required_error: "Date is required",
-  }),
+  date: z.date(),
   labINR: z
     .number()
     .min(0)
