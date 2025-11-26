@@ -109,10 +109,10 @@ export const LogForm: React.FC<LogFormProps> = ({
         <input
           id="warfarinDose"
           type="number"
-          step="0.5"
-          {...register("warfarinDose", { valueAsNumber: true, setValueAs: v => v === "" ? null : parseFloat(v) })}
+          step="1"
+          {...register("warfarinDose", { valueAsNumber: true, setValueAs: v => v === "" ? null : parseInt(v) })}
           className={inputClasses}
-          placeholder="e.g., 5.0"
+          placeholder="e.g., 5"
         />
         {errors.warfarinDose && (
           <p className={errorClasses}>{errors.warfarinDose.message}</p>

@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/Card";
 import { Disclaimer } from "@/components/ui/Disclaimer";
 import { INRChart } from "@/components/charts/INRChart";
 import { DoseChart } from "@/components/charts/DoseChart";
+import { INRDoseCorrelation } from "@/components/charts/INRDoseCorrelation";
+import { TimeInRange } from "@/components/charts/TimeInRange";
+import { INRVariability } from "@/components/charts/INRVariability";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
 import { storage } from "@/lib/storage";
 import { calculateDashboardStats, getINRColor, getINRStatus } from "@/lib/utils";
@@ -13,19 +16,34 @@ import { predictINR } from "@/lib/linear-regression";
 import { Log, DashboardStats, DoseSuggestion, INRPrediction } from "@/lib/types";
 import { motion } from "framer-motion";
 
+type DateRange = "7d" | "30d" | "90d" | "6m" | "1y" | "all";
+type ViewMode = "overview" | "detailed" | "correlation" | "variability";
+
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [logs, setLogs] = useState<Log[]>([]);
+  const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
   const [doseSuggestion, setDoseSuggestion] = useState<DoseSuggestion | null>(null);
   const [predictions, setPredictions] = useState<INRPrediction[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>("30d");
+  const [viewMode, setViewMode] = useState<ViewMode>("overview");
+  const [targetMin, setTargetMin] = useState(2.0);
+  const [targetMax, setTargetMax] = useState(3.0);
 
   useEffect(() => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    filterLogsByDateRange();
+  }, [logs, dateRange]);
+
   const loadData = () => {
     const allLogs = storage.getLogs();
     const settings = storage.getSettings();
+
+    setTargetMin(settings.targetINRMin);
+    setTargetMax(settings.targetINRMax);
 
     const sortedLogs = [...allLogs].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -51,6 +69,36 @@ export default function Dashboard() {
     setPredictions(inrPredictions);
   };
 
+  const filterLogsByDateRange = () => {
+    const now = new Date();
+    let cutoffDate: Date;
+
+    switch (dateRange) {
+      case "7d":
+        cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "30d":
+        cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "90d":
+        cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      case "6m":
+        cutoffDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+        break;
+      case "1y":
+        cutoffDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      case "all":
+      default:
+        setFilteredLogs(logs);
+        return;
+    }
+
+    const filtered = logs.filter((log) => new Date(log.date) >= cutoffDate);
+    setFilteredLogs(filtered);
+  };
+
   if (!stats) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -61,10 +109,26 @@ export default function Dashboard() {
 
   const inrStatus = getINRStatus(
     stats.lastINR,
-    parseFloat(stats.currentTarget.split(" - ")[0]),
-    parseFloat(stats.currentTarget.split(" - ")[1])
+    targetMin,
+    targetMax
   );
   const inrColor = getINRColor(inrStatus);
+
+  const dateRangeOptions: { value: DateRange; label: string }[] = [
+    { value: "7d", label: "7 Days" },
+    { value: "30d", label: "30 Days" },
+    { value: "90d", label: "90 Days" },
+    { value: "6m", label: "6 Months" },
+    { value: "1y", label: "1 Year" },
+    { value: "all", label: "All Time" },
+  ];
+
+  const viewModes: { value: ViewMode; label: string; icon: string }[] = [
+    { value: "overview", label: "Overview", icon: "📊" },
+    { value: "detailed", label: "Detailed", icon: "📈" },
+    { value: "correlation", label: "Correlation", icon: "🔗" },
+    { value: "variability", label: "Variability", icon: "📉" },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -75,12 +139,51 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Overview of your anticoagulation therapy
-        </p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Comprehensive analysis of your anticoagulation therapy
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <div className="flex gap-2">
+              {dateRangeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setDateRange(option.value)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    dateRange === option.value
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {viewModes.map((mode) => (
+            <button
+              key={mode.value}
+              onClick={() => setViewMode(mode.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                viewMode === mode.value
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+            >
+              <span className="mr-2">{mode.icon}</span>
+              {mode.label}
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -114,11 +217,16 @@ export default function Dashboard() {
         <Card animate>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Avg INR (30 days)
+              Avg INR ({dateRange === "all" ? "All Time" : dateRangeOptions.find(o => o.value === dateRange)?.label})
             </p>
             <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {stats.averageINR30Days !== null
-                ? stats.averageINR30Days.toFixed(1)
+              {filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length > 0
+                ? (
+                    filteredLogs
+                      .filter(l => l.homeINR !== null || l.labINR !== null)
+                      .reduce((sum, l) => sum + (l.homeINR || l.labINR!), 0) /
+                    filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length
+                  ).toFixed(1)
                 : "N/A"}
             </p>
           </div>
@@ -127,10 +235,13 @@ export default function Dashboard() {
         <Card animate>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Total Doses Logged
+              Readings in Period
             </p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {stats.totalDosesLogged}
+              {filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              INR measurements
             </p>
           </div>
         </Card>
@@ -173,7 +284,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {predictions.length > 0 && (
+      {predictions.length > 0 && viewMode === "overview" && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,7 +302,7 @@ export default function Dashboard() {
               {predictions.map((prediction, index) => (
                 <div
                   key={index}
-                  className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center"
+                  className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 text-center border border-blue-200 dark:border-blue-800"
                 >
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {new Date(prediction.date).toLocaleDateString("en-US", {
@@ -199,7 +310,7 @@ export default function Dashboard() {
                       day: "numeric",
                     })}
                   </p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {prediction.predictedINR.toFixed(1)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
@@ -212,31 +323,170 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card title="INR Trend (Last 30 Readings)">
-            <INRChart
-              logs={logs}
-              targetMin={parseFloat(stats.currentTarget.split(" - ")[0])}
-              targetMax={parseFloat(stats.currentTarget.split(" - ")[1])}
-            />
-          </Card>
-        </motion.div>
+      {viewMode === "overview" && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card title={`INR Trend - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+                <INRChart
+                  logs={filteredLogs}
+                  targetMin={targetMin}
+                  targetMax={targetMax}
+                  showArea={true}
+                />
+              </Card>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card title="Warfarin Dose History (Last 30 Days)">
-            <DoseChart logs={logs} />
-          </Card>
-        </motion.div>
-      </div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card title={`Warfarin Dose History - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+                <DoseChart logs={filteredLogs} />
+              </Card>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Card title="Time in Therapeutic Range">
+              <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+            </Card>
+          </motion.div>
+        </>
+      )}
+
+      {viewMode === "detailed" && (
+        <div className="grid grid-cols-1 gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card title={`Detailed INR Analysis - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+              <INRChart
+                logs={filteredLogs}
+                targetMin={targetMin}
+                targetMax={targetMax}
+                showArea={true}
+              />
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card title={`Detailed Dose Analysis - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+              <DoseChart logs={filteredLogs} />
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card title="Time in Therapeutic Range">
+              <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+            </Card>
+          </motion.div>
+        </div>
+      )}
+
+      {viewMode === "correlation" && (
+        <div className="grid grid-cols-1 gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card title={`INR vs Warfarin Dose Correlation - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                This scatter plot shows the relationship between your Warfarin doses and resulting INR levels.
+                Each point represents a measurement where both dose and INR were recorded.
+              </p>
+              <INRDoseCorrelation logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+            </Card>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card title="INR Trend">
+                <INRChart
+                  logs={filteredLogs}
+                  targetMin={targetMin}
+                  targetMax={targetMax}
+                />
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card title="Dose Pattern">
+                <DoseChart logs={filteredLogs} />
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === "variability" && (
+        <div className="grid grid-cols-1 gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card title={`INR Variability Analysis - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                This chart shows how your INR changes between measurements. High variability may indicate
+                inconsistent dosing, dietary changes, or other factors affecting your anticoagulation stability.
+              </p>
+              <INRVariability logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+            </Card>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card title="Distribution of Time in Range">
+                <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card title="INR Trend">
+                <INRChart
+                  logs={filteredLogs}
+                  targetMin={targetMin}
+                  targetMax={targetMax}
+                />
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

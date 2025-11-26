@@ -17,6 +17,7 @@ export const logSchema = z.object({
     .optional(),
   warfarinDose: z
     .number()
+    .int("Warfarin dose must be a whole number")
     .min(0)
     .max(50)
     .nullable()

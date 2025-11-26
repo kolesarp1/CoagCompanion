@@ -2,8 +2,9 @@
 
 import React from "react";
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,49 +12,54 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-  Area,
-  ComposedChart,
 } from "recharts";
 import { Log } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-interface INRChartProps {
+interface INRVariabilityProps {
   logs: Log[];
   targetMin: number;
   targetMax: number;
-  showArea?: boolean;
 }
 
-export const INRChart: React.FC<INRChartProps> = ({
+export const INRVariability: React.FC<INRVariabilityProps> = ({
   logs,
   targetMin,
   targetMax,
-  showArea = false,
 }) => {
-  const chartData = logs
-    .filter((log) => log.labINR !== null || log.homeINR !== null)
-    .map((log) => ({
-      date: formatDate(log.date),
-      fullDate: log.date,
-      labINR: log.labINR,
-      homeINR: log.homeINR,
-      targetMin,
-      targetMax,
-    }));
+  const inrLogs = logs.filter((log) => log.homeINR !== null || log.labINR !== null);
 
-  if (chartData.length === 0) {
+  if (inrLogs.length < 2) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-        No INR data available yet. Add your first reading to see the trend.
+        Need at least 2 INR readings to calculate variability.
       </div>
     );
   }
 
-  const ChartComponent = showArea ? ComposedChart : LineChart;
+  const chartData = inrLogs.map((log, index) => {
+    const inr = log.homeINR || log.labINR!;
+    let change = 0;
+
+    if (index > 0) {
+      const prevINR = inrLogs[index - 1].homeINR || inrLogs[index - 1].labINR!;
+      change = inr - prevINR;
+    }
+
+    return {
+      date: formatDate(log.date),
+      fullDate: log.date,
+      inr,
+      change: Math.abs(change),
+      changeDirection: change,
+      targetMin,
+      targetMax,
+    };
+  });
 
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ChartComponent data={chartData}>
+      <ComposedChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
         <XAxis
           dataKey="date"
@@ -65,10 +71,20 @@ export const INRChart: React.FC<INRChartProps> = ({
           height={80}
         />
         <YAxis
+          yAxisId="left"
           stroke="#9ca3af"
           tick={{ fill: "#9ca3af" }}
           domain={[0, 5]}
           fontSize={12}
+          label={{ value: "INR Level", angle: -90, position: "insideLeft", fill: "#9ca3af" }}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          stroke="#9ca3af"
+          tick={{ fill: "#9ca3af" }}
+          fontSize={12}
+          label={{ value: "Change", angle: 90, position: "insideRight", fill: "#9ca3af" }}
         />
         <Tooltip
           contentStyle={{
@@ -88,58 +104,44 @@ export const INRChart: React.FC<INRChartProps> = ({
             }
             return label;
           }}
+          formatter={(value: any, name: string) => {
+            if (name === "inr") return [value.toFixed(1), "INR"];
+            if (name === "change") return [value.toFixed(2), "Abs Change"];
+            return [value, name];
+          }}
         />
         <Legend wrapperStyle={{ color: "#9ca3af" }} />
-        {showArea && (
-          <>
-            <defs>
-              <linearGradient id="targetZone" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
-              </linearGradient>
-            </defs>
-            <Area
-              type="monotone"
-              dataKey="targetMax"
-              stroke="none"
-              fill="url(#targetZone)"
-              fillOpacity={0.3}
-            />
-          </>
-        )}
         <ReferenceLine
           y={targetMin}
           stroke="#10b981"
           strokeDasharray="5 5"
-          label={{ value: `Min ${targetMin}`, fill: "#10b981", fontSize: 11 }}
+          yAxisId="left"
         />
         <ReferenceLine
           y={targetMax}
           stroke="#10b981"
           strokeDasharray="5 5"
-          label={{ value: `Max ${targetMax}`, fill: "#10b981", fontSize: 11 }}
+          yAxisId="left"
+        />
+        <Bar
+          yAxisId="right"
+          dataKey="change"
+          fill="#f59e0b"
+          name="INR Change"
+          opacity={0.6}
+          radius={[8, 8, 0, 0]}
         />
         <Line
+          yAxisId="left"
           type="monotone"
-          dataKey="labINR"
-          stroke="#3b82f6"
-          strokeWidth={3}
-          name="Lab INR"
-          dot={{ fill: "#3b82f6", r: 5 }}
-          activeDot={{ r: 7 }}
-          connectNulls
-        />
-        <Line
-          type="monotone"
-          dataKey="homeINR"
+          dataKey="inr"
           stroke="#8b5cf6"
           strokeWidth={3}
-          name="Home INR"
+          name="INR Level"
           dot={{ fill: "#8b5cf6", r: 5 }}
           activeDot={{ r: 7 }}
-          connectNulls
         />
-      </ChartComponent>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 };

@@ -259,7 +259,7 @@ export default function Logs() {
                       </p>
                       <p className="font-semibold text-green-600 dark:text-green-400">
                         {log.warfarinDose !== null
-                          ? `${log.warfarinDose.toFixed(1)} mg`
+                          ? `${log.warfarinDose} mg`
                           : "-"}
                       </p>
                     </div>
