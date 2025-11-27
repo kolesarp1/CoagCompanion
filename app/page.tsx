@@ -13,6 +13,9 @@ import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
 import { getINRStatus, getINRColor } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
 
+// Force dynamic rendering - required for authentication
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<User | null>(null);

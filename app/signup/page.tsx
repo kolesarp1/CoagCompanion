@@ -4,6 +4,9 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { SignupForm } from "@/components/auth/SignupForm";
 
+// Force dynamic rendering - required for authentication
+export const dynamic = 'force-dynamic';
+
 export default function SignupPage() {
   return (
     <div className="max-w-md mx-auto">

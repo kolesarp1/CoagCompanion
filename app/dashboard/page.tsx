@@ -16,6 +16,9 @@ import { predictINR } from "@/lib/linear-regression";
 import { Log, DashboardStats, DoseSuggestion, INRPrediction } from "@/lib/types";
 import { motion } from "framer-motion";
 
+// Force dynamic rendering - required for authentication
+export const dynamic = 'force-dynamic';
+
 type DateRange = "7d" | "30d" | "90d" | "6m" | "1y" | "all";
 type ViewMode = "overview" | "detailed" | "correlation" | "variability";
 

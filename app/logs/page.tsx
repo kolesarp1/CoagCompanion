@@ -14,6 +14,9 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Papa from "papaparse";
 
+// Force dynamic rendering - required for authentication
+export const dynamic = 'force-dynamic';
+
 export default function Logs() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);

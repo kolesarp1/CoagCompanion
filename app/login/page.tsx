@@ -4,6 +4,9 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { LoginForm } from "@/components/auth/LoginForm";
 
+// Force dynamic rendering - required for authentication
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto">
