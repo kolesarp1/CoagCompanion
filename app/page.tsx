@@ -6,31 +6,57 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Disclaimer } from "@/components/ui/Disclaimer";
-import { storage } from "@/lib/storage";
-import { parseSeedData } from "@/lib/toml-parser";
+import { MigrationPrompt } from "@/components/auth/MigrationPrompt";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseStorage } from "@/lib/supabase-storage";
+import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
 import { getINRStatus, getINRColor } from "@/lib/utils";
+import type { User } from "@supabase/supabase-js";
 
 export default function Home() {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [lastINR, setLastINR] = useState<number | null>(null);
   const [targetMin, setTargetMin] = useState(2.0);
   const [targetMax, setTargetMax] = useState(3.0);
+  const supabase = createClient();
 
   useEffect(() => {
-    // Initialize with seed data if empty
-    const logs = storage.getLogs();
-    if (logs.length === 0) {
-      const seedLogs = parseSeedData();
-      storage.saveLogs(seedLogs);
+    initializeData();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user ?? null);
+        await initializeData();
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const initializeData = async () => {
+    // Check authentication status
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+
+    let logs, settings;
+
+    if (user) {
+      // Authenticated user - use Supabase storage
+      logs = await supabaseStorage.getLogs();
+      settings = await supabaseStorage.getSettings();
+    } else {
+      // Non-authenticated user - show sample data
+      logs = getSampleLogs();
+      settings = getSampleSettings();
     }
 
     // Get settings and last INR
-    const settings = storage.getSettings();
     setTargetMin(settings.targetINRMin);
     setTargetMax(settings.targetINRMax);
 
-    const allLogs = storage.getLogs();
-    const sortedLogs = [...allLogs].sort(
+    const sortedLogs = [...logs].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
@@ -52,7 +78,7 @@ export default function Home() {
         Notification.requestPermission();
       }
     }
-  }, []);
+  };
 
   const inrStatus = getINRStatus(lastINR, targetMin, targetMax);
   const inrColor = getINRColor(inrStatus);
@@ -69,13 +95,35 @@ export default function Home() {
     <div className="max-w-6xl mx-auto">
       <Disclaimer />
 
+      {user && (
+        <div className="mb-6">
+          <MigrationPrompt />
+        </div>
+      )}
+
+      {!user && (
+        <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+            You're viewing sample data.{" "}
+            <Link href="/signup" className="font-semibold hover:underline">
+              Sign up
+            </Link>{" "}
+            or{" "}
+            <Link href="/login" className="font-semibold hover:underline">
+              sign in
+            </Link>{" "}
+            to save your own data.
+          </p>
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-12"
       >
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-bold mb-4 pb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
           Welcome to CoagCompanion
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">

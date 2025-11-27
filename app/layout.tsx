@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,7 +52,13 @@ export default function RootLayout({
                       </Link>
                     </div>
                   </div>
-                  <ThemeToggle />
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+                      v1.0.0
+                    </span>
+                    <ThemeToggle />
+                    <UserMenu />
+                  </div>
                 </div>
               </div>
             </nav>

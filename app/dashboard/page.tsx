@@ -9,7 +9,7 @@ import { INRDoseCorrelation } from "@/components/charts/INRDoseCorrelation";
 import { TimeInRange } from "@/components/charts/TimeInRange";
 import { INRVariability } from "@/components/charts/INRVariability";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
-import { storage } from "@/lib/storage";
+import { supabaseStorage } from "@/lib/supabase-storage";
 import { calculateDashboardStats, getINRColor, getINRStatus } from "@/lib/utils";
 import { calculateDoseSuggestion } from "@/lib/dose-algorithm";
 import { predictINR } from "@/lib/linear-regression";
@@ -38,9 +38,9 @@ export default function Dashboard() {
     filterLogsByDateRange();
   }, [logs, dateRange]);
 
-  const loadData = () => {
-    const allLogs = storage.getLogs();
-    const settings = storage.getSettings();
+  const loadData = async () => {
+    const allLogs = await supabaseStorage.getLogs();
+    const settings = await supabaseStorage.getSettings();
 
     setTargetMin(settings.targetINRMin);
     setTargetMax(settings.targetINRMax);

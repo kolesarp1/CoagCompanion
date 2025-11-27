@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LogForm } from "@/components/forms/LogForm";
 import { Disclaimer } from "@/components/ui/Disclaimer";
-import { storage } from "@/lib/storage";
+import { supabaseStorage } from "@/lib/supabase-storage";
 import { Log } from "@/lib/types";
 import { LogFormData } from "@/lib/schemas";
 import { formatDate, exportToCSV } from "@/lib/utils";
@@ -34,8 +34,8 @@ export default function Logs() {
     filterLogs();
   }, [logs, searchQuery, filterType]);
 
-  const loadLogs = () => {
-    const allLogs = storage.getLogs();
+  const loadLogs = async () => {
+    const allLogs = await supabaseStorage.getLogs();
     const sortedLogs = [...allLogs].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
@@ -72,7 +72,7 @@ export default function Logs() {
     setFilteredLogs(filtered);
   };
 
-  const handleAddLog = (data: LogFormData) => {
+  const handleAddLog = async (data: LogFormData) => {
     const newLog: Log = {
       id: `log-${Date.now()}`,
       date: data.date.toISOString().split("T")[0],
@@ -84,13 +84,13 @@ export default function Logs() {
       vitaminKIntake: data.vitaminKIntake ?? null,
     };
 
-    storage.addLog(newLog);
-    loadLogs();
+    await supabaseStorage.addLog(newLog);
+    await loadLogs();
     setIsAddModalOpen(false);
     toast.success("Log added successfully!");
   };
 
-  const handleEditLog = (data: LogFormData) => {
+  const handleEditLog = async (data: LogFormData) => {
     if (!selectedLog) return;
 
     const updatedLog: Partial<Log> = {
@@ -103,18 +103,18 @@ export default function Logs() {
       vitaminKIntake: data.vitaminKIntake ?? null,
     };
 
-    storage.updateLog(selectedLog.id, updatedLog);
-    loadLogs();
+    await supabaseStorage.updateLog(selectedLog.id, updatedLog);
+    await loadLogs();
     setIsEditModalOpen(false);
     setSelectedLog(null);
     toast.success("Log updated successfully!");
   };
 
-  const handleDeleteLog = () => {
+  const handleDeleteLog = async () => {
     if (!selectedLog) return;
 
-    storage.deleteLog(selectedLog.id);
-    loadLogs();
+    await supabaseStorage.deleteLog(selectedLog.id);
+    await loadLogs();
     setIsDeleteModalOpen(false);
     setSelectedLog(null);
     toast.success("Log deleted successfully!");
@@ -131,8 +131,8 @@ export default function Logs() {
     toast.success("CSV exported successfully!");
   };
 
-  const handleExportJSON = () => {
-    const data = storage.exportData();
+  const handleExportJSON = async () => {
+    const data = await supabaseStorage.exportData();
     const blob = new Blob([data], { type: "application/json" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -142,16 +142,16 @@ export default function Logs() {
     toast.success("JSON backup exported successfully!");
   };
 
-  const handleImportJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result as string;
-      const success = storage.importData(content);
+      const success = await supabaseStorage.importData(content);
       if (success) {
-        loadLogs();
+        await loadLogs();
         toast.success("Data imported successfully!");
       } else {
         toast.error("Failed to import data. Please check the file format.");

@@ -79,7 +79,9 @@ export const LogForm: React.FC<LogFormProps> = ({
             id="labINR"
             type="number"
             step="0.01"
-            {...register("labINR", { valueAsNumber: true, setValueAs: v => v === "" ? null : parseFloat(v) })}
+            {...register("labINR", {
+              setValueAs: v => v === "" || v === null ? undefined : parseFloat(v)
+            })}
             className={inputClasses}
             placeholder="e.g., 2.5"
           />
@@ -94,7 +96,9 @@ export const LogForm: React.FC<LogFormProps> = ({
             id="homeINR"
             type="number"
             step="0.01"
-            {...register("homeINR", { valueAsNumber: true, setValueAs: v => v === "" ? null : parseFloat(v) })}
+            {...register("homeINR", {
+              setValueAs: v => v === "" || v === null ? undefined : parseFloat(v)
+            })}
             className={inputClasses}
             placeholder="e.g., 2.4"
           />
@@ -110,7 +114,9 @@ export const LogForm: React.FC<LogFormProps> = ({
           id="warfarinDose"
           type="number"
           step="1"
-          {...register("warfarinDose", { valueAsNumber: true, setValueAs: v => v === "" ? null : parseInt(v) })}
+          {...register("warfarinDose", {
+            setValueAs: v => v === "" || v === null ? undefined : parseInt(v)
+          })}
           className={inputClasses}
           placeholder="e.g., 5"
         />

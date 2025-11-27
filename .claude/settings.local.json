@@ -7,7 +7,15 @@
       "Bash(git commit:*)",
       "Bash(git remote add:*)",
       "Bash(git push:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git gui:*)",
+      "Bash(ssh-add:*)",
+      "Bash(powershell.exe -Command \"Get-Service ssh-agent\")",
+      "Bash(powershell.exe -Command \"Start-Service ssh-agent; Set-Service -Name ssh-agent -StartupType Automatic\")",
+      "Bash(ssh-add.exe:*)",
+      "WebFetch(domain:www.netlify.com)",
+      "WebSearch",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

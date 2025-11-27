@@ -4,14 +4,27 @@ export const logSchema = z.object({
   id: z.string().optional(),
   date: z.date(),
   labINR: z
-    .union([z.number().min(0).max(10), z.null()])
-    .optional(),
+    .number()
+    .min(0, "Lab INR must be at least 0")
+    .max(10, "Lab INR must be at most 10")
+    .nullable()
+    .optional()
+    .or(z.literal(undefined)),
   homeINR: z
-    .union([z.number().min(0).max(10), z.null()])
-    .optional(),
+    .number()
+    .min(0, "Home INR must be at least 0")
+    .max(10, "Home INR must be at most 10")
+    .nullable()
+    .optional()
+    .or(z.literal(undefined)),
   warfarinDose: z
-    .union([z.number().int("Warfarin dose must be a whole number").min(0).max(50), z.null()])
-    .optional(),
+    .number()
+    .int("Warfarin dose must be a whole number")
+    .min(0, "Warfarin dose must be at least 0")
+    .max(50, "Warfarin dose must be at most 50")
+    .nullable()
+    .optional()
+    .or(z.literal(undefined)),
   injections: z.string().nullable().optional(),
   comment: z.string().nullable().optional(),
   vitaminKIntake: z.string().nullable().optional(),
