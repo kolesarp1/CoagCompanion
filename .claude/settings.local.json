@@ -15,7 +15,8 @@
       "Bash(ssh-add.exe:*)",
       "WebFetch(domain:www.netlify.com)",
       "WebSearch",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519\" git push)"
     ],
     "deny": [],
     "ask": []
