@@ -12,6 +12,7 @@ export interface Log {
 export interface DoseSuggestion {
   currentDose: number;
   suggestedDose: number;
+  alternatingPattern?: string; // e.g., "2 days 6mg, then 7mg, repeat"
   maintenanceDoseChange: string;
   reasoning: string;
   warning?: string;

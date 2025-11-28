@@ -100,6 +100,13 @@ export function UserMenu() {
               </p>
             </div>
             <div className="py-1">
+              <Link
+                href="/settings"
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                Settings
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

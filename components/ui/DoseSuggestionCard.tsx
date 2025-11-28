@@ -29,7 +29,7 @@ export const DoseSuggestionCard: React.FC<DoseSuggestionCardProps> = ({
               Current Maintenance
             </p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">
-              {suggestion.currentDose.toFixed(1)} mg
+              {suggestion.currentDose} mg
             </p>
           </div>
           <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
@@ -37,10 +37,21 @@ export const DoseSuggestionCard: React.FC<DoseSuggestionCardProps> = ({
               Suggested Today
             </p>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {suggestion.suggestedDose.toFixed(1)} mg
+              {suggestion.suggestedDose} mg
             </p>
           </div>
         </div>
+
+        {suggestion.alternatingPattern && (
+          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+            <p className="text-sm font-medium text-purple-800 dark:text-purple-400 mb-1">
+              Alternating Dose Pattern:
+            </p>
+            <p className="text-sm text-purple-700 dark:text-purple-300">
+              {suggestion.alternatingPattern}
+            </p>
+          </div>
+        )}
 
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
