@@ -7,12 +7,15 @@ import { Modal } from "@/components/ui/Modal";
 import { LogForm } from "@/components/forms/LogForm";
 import { Disclaimer } from "@/components/ui/Disclaimer";
 import { supabaseStorage } from "@/lib/supabase-storage";
+import { getSampleLogs } from "@/lib/sample-data";
+import { createClient } from "@/lib/supabase/client";
 import { Log } from "@/lib/types";
 import { LogFormData } from "@/lib/schemas";
 import { formatDate, exportToCSV } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Papa from "papaparse";
+import Link from "next/link";
 
 // Force dynamic rendering - required for authentication
 export const dynamic = 'force-dynamic';
@@ -28,6 +31,7 @@ export default function Logs() {
   const [filterType, setFilterType] = useState<"all" | "inr" | "dose" | "injections">(
     "all"
   );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     loadLogs();
@@ -38,7 +42,21 @@ export default function Logs() {
   }, [logs, searchQuery, filterType]);
 
   const loadLogs = async () => {
-    const allLogs = await supabaseStorage.getLogs();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let allLogs: Log[];
+
+    if (user) {
+      // User is authenticated - load their data
+      setIsAuthenticated(true);
+      allLogs = await supabaseStorage.getLogs();
+    } else {
+      // User is not authenticated - load sample data
+      setIsAuthenticated(false);
+      allLogs = getSampleLogs();
+    }
+
     const sortedLogs = [...allLogs].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
@@ -168,6 +186,22 @@ export default function Logs() {
     <div className="max-w-7xl mx-auto">
       <Disclaimer />
 
+      {!isAuthenticated && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+          <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+            <strong>Sample Data (Read-Only)</strong> - You are viewing demo data.{" "}
+            <Link href="/login" className="underline hover:text-yellow-900 dark:hover:text-yellow-100">
+              Log in
+            </Link>{" "}
+            or{" "}
+            <Link href="/signup" className="underline hover:text-yellow-900 dark:hover:text-yellow-100">
+              sign up
+            </Link>{" "}
+            to track your own data.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
@@ -177,28 +211,30 @@ export default function Logs() {
             Track your INR, doses, and injections
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
-          <Button onClick={() => setIsAddModalOpen(true)} variant="primary">
-            + Add Log
-          </Button>
-          <Button onClick={handleExportCSV} variant="secondary">
-            Export CSV
-          </Button>
-          <Button onClick={handleExportJSON} variant="secondary">
-            Backup JSON
-          </Button>
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportJSON}
-              className="hidden"
-            />
-            <span className="inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-base bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">
-              Import JSON
-            </span>
-          </label>
-        </div>
+        {isAuthenticated && (
+          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <Button onClick={() => setIsAddModalOpen(true)} variant="primary">
+              + Add Log
+            </Button>
+            <Button onClick={handleExportCSV} variant="secondary">
+              Export CSV
+            </Button>
+            <Button onClick={handleExportJSON} variant="secondary">
+              Backup JSON
+            </Button>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportJSON}
+                className="hidden"
+              />
+              <span className="inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-base bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">
+                Import JSON
+              </span>
+            </label>
+          </div>
+        )}
       </div>
 
       <Card className="mb-6">
@@ -275,28 +311,30 @@ export default function Logs() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setSelectedLog(log);
-                        setIsEditModalOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => {
-                        setSelectedLog(log);
-                        setIsDeleteModalOpen(true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                  {isAuthenticated && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setIsEditModalOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setIsDeleteModalOpen(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 {(log.comment || log.vitaminKIntake) && (
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">

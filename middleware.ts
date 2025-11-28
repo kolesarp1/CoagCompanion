@@ -7,6 +7,21 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  // If an OAuth provider (or a misconfigured OAuth app) redirects back to
+  // the root (or any page) containing a `code` query parameter, forward
+  // that request to our dedicated auth callback route so the app can
+  // exchange the code for a session. This makes local testing more
+  // resilient when provider callback URLs are not exact.
+  try {
+    const url = request.nextUrl.clone()
+    if (url.searchParams.has('code') && url.pathname !== '/auth/callback') {
+      url.pathname = '/auth/callback'
+      return NextResponse.redirect(url)
+    }
+  } catch (_) {
+    // Fall back to the normal flow on any issues parsing the URL
+  }
+
   const supabase = createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -30,17 +45,6 @@ export async function middleware(request: NextRequest) {
 
   // Refresh session if expired - required for Server Components
   const { data: { user } } = await supabase.auth.getUser()
-
-  // Protected routes - redirect to login if not authenticated
-  if (!user && (
-    request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/logs')
-  )) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.searchParams.set('redirect', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
-  }
 
   // Redirect to dashboard if already logged in and trying to access auth pages
   if (user && (

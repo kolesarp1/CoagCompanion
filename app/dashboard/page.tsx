@@ -10,11 +10,14 @@ import { TimeInRange } from "@/components/charts/TimeInRange";
 import { INRVariability } from "@/components/charts/INRVariability";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
 import { supabaseStorage } from "@/lib/supabase-storage";
+import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
+import { createClient } from "@/lib/supabase/client";
 import { calculateDashboardStats, getINRColor, getINRStatus } from "@/lib/utils";
 import { calculateDoseSuggestion } from "@/lib/dose-algorithm";
 import { predictINR } from "@/lib/linear-regression";
 import { Log, DashboardStats, DoseSuggestion, INRPrediction } from "@/lib/types";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 // Force dynamic rendering - required for authentication
 export const dynamic = 'force-dynamic';
@@ -32,6 +35,7 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [targetMin, setTargetMin] = useState(2.0);
   const [targetMax, setTargetMax] = useState(3.0);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -42,8 +46,23 @@ export default function Dashboard() {
   }, [logs, dateRange]);
 
   const loadData = async () => {
-    const allLogs = await supabaseStorage.getLogs();
-    const settings = await supabaseStorage.getSettings();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let allLogs: Log[];
+    let settings;
+
+    if (user) {
+      // User is authenticated - load their data
+      setIsAuthenticated(true);
+      allLogs = await supabaseStorage.getLogs();
+      settings = await supabaseStorage.getSettings();
+    } else {
+      // User is not authenticated - load sample data
+      setIsAuthenticated(false);
+      allLogs = getSampleLogs();
+      settings = getSampleSettings();
+    }
 
     setTargetMin(settings.targetINRMin);
     setTargetMax(settings.targetINRMax);
@@ -136,6 +155,22 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto">
       <Disclaimer />
+
+      {!isAuthenticated && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+          <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+            <strong>Sample Data (Read-Only)</strong> - You are viewing demo data.{" "}
+            <Link href="/login" className="underline hover:text-yellow-900 dark:hover:text-yellow-100">
+              Log in
+            </Link>{" "}
+            or{" "}
+            <Link href="/signup" className="underline hover:text-yellow-900 dark:hover:text-yellow-100">
+              sign up
+            </Link>{" "}
+            to track your own data.
+          </p>
+        </div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
