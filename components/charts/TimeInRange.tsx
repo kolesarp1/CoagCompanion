@@ -114,6 +114,16 @@ export const TimeInRange: React.FC<TimeInRangeProps> = ({
           <p className="text-xs text-gray-500 dark:text-gray-500">&gt; {targetMax}</p>
         </div>
       </div>
+
+      {/* Clinical guidance */}
+      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">Clinical Guidance</h4>
+        <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+          <li><span className="font-medium">Below range:</span> Critical for clot creation, bridge with Fraxiparine shot</li>
+          <li><span className="font-medium">Slightly above range (3-5):</span> Risk of bleeding, adjust dosage</li>
+          <li><span className="font-medium">Above 5:</span> Critical risk of bleeding, skip 1 dosage</li>
+        </ul>
+      </div>
     </div>
   );
 };

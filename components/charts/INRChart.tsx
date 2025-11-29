@@ -24,6 +24,42 @@ interface INRChartProps {
   showArea?: boolean;
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const data = payload[0].payload;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+        {new Date(data.fullDate).toLocaleDateString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })}
+      </p>
+      <div className="space-y-1">
+        {data.labINR !== null && (
+          <p className="text-sm text-blue-600 dark:text-blue-400">
+            Lab INR: <span className="font-semibold">{data.labINR}</span>
+          </p>
+        )}
+        {data.homeINR !== null && (
+          <p className="text-sm text-purple-600 dark:text-purple-400">
+            Home INR: <span className="font-semibold">{data.homeINR}</span>
+          </p>
+        )}
+        {data.comment && (
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+            {data.comment}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const INRChart: React.FC<INRChartProps> = ({
   logs,
   targetMin,
@@ -37,8 +73,7 @@ export const INRChart: React.FC<INRChartProps> = ({
       fullDate: log.date,
       labINR: log.labINR,
       homeINR: log.homeINR,
-      targetMin,
-      targetMax,
+      comment: log.comment,
     }));
 
   if (chartData.length === 0) {
@@ -70,26 +105,7 @@ export const INRChart: React.FC<INRChartProps> = ({
           domain={[0, 5]}
           fontSize={12}
         />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-            border: "1px solid #e5e7eb",
-            borderRadius: "8px",
-            color: "#1f2937",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-          }}
-          labelFormatter={(label, payload) => {
-            if (payload && payload.length > 0) {
-              return new Date(payload[0].payload.fullDate).toLocaleDateString('en-US', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              });
-            }
-            return label;
-          }}
-        />
+        <Tooltip content={<CustomTooltip />} />
         <Legend wrapperStyle={{ color: "#9ca3af" }} />
         {showArea && (
           <>
