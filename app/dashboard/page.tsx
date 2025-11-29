@@ -8,6 +8,7 @@ import { DoseChart } from "@/components/charts/DoseChart";
 import { INRDoseCorrelation } from "@/components/charts/INRDoseCorrelation";
 import { TimeInRange } from "@/components/charts/TimeInRange";
 import { INRVariability } from "@/components/charts/INRVariability";
+import { VitaminKChart } from "@/components/charts/VitaminKChart";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
 import { supabaseStorage } from "@/lib/supabase-storage";
 import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
@@ -375,6 +376,7 @@ export default function Dashboard() {
                   targetMin={targetMin}
                   targetMax={targetMax}
                   showArea={true}
+                  showVitaminKLag={true}
                 />
               </Card>
             </motion.div>
@@ -397,6 +399,20 @@ export default function Dashboard() {
           >
             <Card title="Time in Therapeutic Range">
               <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Card title="Vitamin K Intake Timeline">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Track your vitamin K intake over time. Green foods affect INR levels approximately 2 days later.
+                Hover over INR data points above to see vitamin K intake from 2 days prior.
+              </p>
+              <VitaminKChart logs={filteredLogs} />
             </Card>
           </motion.div>
         </>
@@ -461,11 +477,12 @@ export default function Dashboard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card title="INR Trend">
+              <Card title="INR Trend with Vitamin K Indicators">
                 <INRChart
                   logs={filteredLogs}
                   targetMin={targetMin}
                   targetMax={targetMax}
+                  showVitaminKLag={true}
                 />
               </Card>
             </motion.div>
@@ -480,6 +497,20 @@ export default function Dashboard() {
               </Card>
             </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card title="Vitamin K Intake Timeline">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Vitamin K from green foods affects your INR approximately 2 days later.
+                Compare this timeline with the INR trend above to see correlations.
+              </p>
+              <VitaminKChart logs={filteredLogs} />
+            </Card>
+          </motion.div>
         </div>
       )}
 

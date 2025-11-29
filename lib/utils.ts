@@ -174,3 +174,35 @@ export function scrollToSection(sectionId: string): void {
     block: 'start',
   });
 }
+
+/**
+ * Get vitamin K intake from N days before a target date
+ * Used to show the lag effect (vitamin K affects INR 2-3 days later)
+ * @param logs - Array of log entries
+ * @param targetDate - The date to calculate backwards from (ISO string)
+ * @param daysAgo - Number of days to look back (default: 2)
+ * @returns Vitamin K intake category or null if not found
+ */
+export function getVitaminKWithLag(
+  logs: Log[],
+  targetDate: string,
+  daysAgo: number = 2
+): string | null {
+  if (!logs || logs.length === 0) return null;
+
+  // Calculate the lag date
+  const target = new Date(targetDate);
+  const lagDate = new Date(target);
+  lagDate.setDate(lagDate.getDate() - daysAgo);
+
+  // Convert both dates to ISO date strings (YYYY-MM-DD) for comparison
+  const lagDateStr = lagDate.toISOString().split('T')[0];
+
+  // Find the log entry matching the lag date
+  const lagLog = logs.find((log) => {
+    const logDateStr = new Date(log.date).toISOString().split('T')[0];
+    return logDateStr === lagDateStr;
+  });
+
+  return lagLog?.vitaminKIntake || null;
+}

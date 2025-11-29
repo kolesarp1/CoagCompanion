@@ -33,4 +33,4 @@ export interface DashboardStats {
   lastINRType: 'lab' | 'home' | null;
 }
 
-export type VitaminKCategory = 'High' | 'Medium' | 'Low' | 'Custom';
+export type VitaminKCategory = 'Low' | 'Medium' | 'High' | 'ExtraHigh' | 'Custom';

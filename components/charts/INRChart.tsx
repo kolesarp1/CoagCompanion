@@ -15,13 +15,15 @@ import {
   ComposedChart,
 } from "recharts";
 import { Log } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getVitaminKWithLag } from "@/lib/utils";
+import { getVitaminKColor, getVitaminKLabel } from "@/lib/vitamin-k-colors";
 
 interface INRChartProps {
   logs: Log[];
   targetMin: number;
   targetMax: number;
   showArea?: boolean;
+  showVitaminKLag?: boolean;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -50,6 +52,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             Home INR: <span className="font-semibold">{data.homeINR}</span>
           </p>
         )}
+        {data.vitaminKLag && (
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block w-2 h-2 rounded-full"
+                style={{ backgroundColor: getVitaminKColor(data.vitaminKLag, 'light') }}
+              />
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Vitamin K 2 days ago: <span className="font-medium">{getVitaminKLabel(data.vitaminKLag)}</span>
+              </p>
+            </div>
+          </div>
+        )}
         {data.comment && (
           <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
             {data.comment}
@@ -65,6 +80,7 @@ export const INRChart: React.FC<INRChartProps> = ({
   targetMin,
   targetMax,
   showArea = false,
+  showVitaminKLag = false,
 }) => {
   const chartData = logs
     .filter((log) => log.labINR !== null || log.homeINR !== null)
@@ -74,6 +90,7 @@ export const INRChart: React.FC<INRChartProps> = ({
       labINR: log.labINR,
       homeINR: log.homeINR,
       comment: log.comment,
+      vitaminKLag: showVitaminKLag ? getVitaminKWithLag(logs, log.date, 2) : null,
     }));
 
   if (chartData.length === 0) {

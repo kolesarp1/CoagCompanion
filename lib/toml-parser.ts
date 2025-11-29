@@ -66,6 +66,7 @@ date = "2025-09-13T00:00:00"
 "Coagu Check" = 2.7
 Warfarin = 13.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = ""
 date = "2025-09-14T00:00:00"
 
@@ -73,6 +74,7 @@ date = "2025-09-14T00:00:00"
 "Coagu Check" = 3.0
 Warfarin = 11.5
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = "Bral jsem antibiotika kvůli dentální hygieně"
 date = "2025-09-15T00:00:00"
 
@@ -80,6 +82,7 @@ date = "2025-09-15T00:00:00"
 "Coagu Check" = 3.2
 Warfarin = 11.5
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-09-16T00:00:00"
 
@@ -87,6 +90,7 @@ date = "2025-09-16T00:00:00"
 "Coagu Check" = 3.3
 Warfarin = 10.5
 Injekce = ""
+"Vitamin K" = "High"
 Comment = ""
 date = "2025-09-17T00:00:00"
 
@@ -184,6 +188,7 @@ date = "2025-09-30T00:00:00"
 "Coagu Check" = 2.4
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-01T00:00:00"
 
@@ -191,6 +196,7 @@ date = "2025-10-01T00:00:00"
 "Coagu Check" = 2.5
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = ""
 date = "2025-10-02T00:00:00"
 
@@ -198,6 +204,7 @@ date = "2025-10-02T00:00:00"
 "Coagu Check" = 2.5
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-03T00:00:00"
 
@@ -205,6 +212,7 @@ date = "2025-10-03T00:00:00"
 "Coagu Check" = 2.4
 Warfarin = 9.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-04T00:00:00"
 
@@ -212,6 +220,7 @@ date = "2025-10-04T00:00:00"
 "Coagu Check" = 2.7
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = ""
 date = "2025-10-05T00:00:00"
 
@@ -219,6 +228,7 @@ date = "2025-10-05T00:00:00"
 "Coagu Check" = 2.6
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = ""
 date = "2025-10-06T00:00:00"
 
@@ -226,6 +236,7 @@ date = "2025-10-06T00:00:00"
 "Coagu Check" = 2.7
 Warfarin = 9.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-07T00:00:00"
 
@@ -233,6 +244,7 @@ date = "2025-10-07T00:00:00"
 "Coagu Check" = 2.9
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "ExtraHigh"
 Comment = ""
 date = "2025-10-08T00:00:00"
 
@@ -240,6 +252,7 @@ date = "2025-10-08T00:00:00"
 "Coagu Check" = 2.6
 Warfarin = 9.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = ""
 date = "2025-10-09T00:00:00"
 
@@ -247,6 +260,7 @@ date = "2025-10-09T00:00:00"
 "Coagu Check" = 3.3
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "ExtraHigh"
 Comment = ""
 date = "2025-10-10T00:00:00"
 
@@ -275,6 +289,7 @@ date = "2025-10-13T00:00:00"
 "Coagu Check" = 2.9
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = "na obed pár fazolek"
 date = "2025-10-14T00:00:00"
 
@@ -352,6 +367,7 @@ date = "2025-10-24T00:00:00"
 "Coagu Check" = 3.7
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = "šálek hrášku na obed"
 date = "2025-10-25T00:00:00"
 
@@ -359,6 +375,7 @@ date = "2025-10-25T00:00:00"
 "Coagu Check" = 3.7
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = "šálek fazolek na obed"
 date = "2025-10-26T00:00:00"
 
@@ -366,6 +383,7 @@ date = "2025-10-26T00:00:00"
 "Coagu Check" = 3.6
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = "Caesar salad"
 date = "2025-10-27T00:00:00"
 
@@ -373,6 +391,7 @@ date = "2025-10-27T00:00:00"
 "Coagu Check" = 3.4
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = "mätový čaj"
 date = "2025-10-28T00:00:00"
 
@@ -380,6 +399,7 @@ date = "2025-10-28T00:00:00"
 "Coagu Check" = 3.2
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-29T00:00:00"
 
@@ -387,6 +407,7 @@ date = "2025-10-29T00:00:00"
 "Coagu Check" = 3.2
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "ExtraHigh"
 Comment = "kysane zeli + salad"
 date = "2025-10-30T00:00:00"
 
@@ -394,6 +415,7 @@ date = "2025-10-30T00:00:00"
 "Coagu Check" = 2.9
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "Medium"
 Comment = ""
 date = "2025-10-31T00:00:00"
 
@@ -401,6 +423,7 @@ date = "2025-10-31T00:00:00"
 "Coagu Check" = 2.5
 Warfarin = 9.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = "bez zeleneho"
 date = "2025-11-01T00:00:00"
 
@@ -408,6 +431,7 @@ date = "2025-11-01T00:00:00"
 "Coagu Check" = 3.0
 Warfarin = 8.0
 Injekce = ""
+"Vitamin K" = "Low"
 Comment = "bez zeleneho"
 date = "2025-11-02T00:00:00"
 
@@ -415,6 +439,7 @@ date = "2025-11-02T00:00:00"
 "Coagu Check" = 3.4
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = "trochu kyslého kelu večer"
 date = "2025-11-03T00:00:00"
 
@@ -422,12 +447,14 @@ date = "2025-11-03T00:00:00"
 "Coagu Check" = 3.5
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = "kysaná kapusta"
 date = "2025-11-04T00:00:00"
 
 [[logs]]
 Warfarin = 7.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = "kysaná kapusta"
 date = "2025-11-05T00:00:00"
 
@@ -435,6 +462,7 @@ date = "2025-11-05T00:00:00"
 "Coagu Check" = 3.8
 Warfarin = 6.0
 Injekce = ""
+"Vitamin K" = "High"
 Comment = "salat"
 date = "2025-11-06T00:00:00"
 
@@ -613,6 +641,8 @@ export function parseSeedData(): Log[] {
           log.injections = value || null;
         } else if (key === "Comment") {
           log.comment = value || null;
+        } else if (key === "Vitamin K") {
+          log.vitaminKIntake = value || null;
         } else if (key === "date") {
           log.date = value;
         }

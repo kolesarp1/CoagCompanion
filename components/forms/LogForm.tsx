@@ -154,6 +154,7 @@ export const LogForm: React.FC<LogFormProps> = ({
           <option value="Low">Low (Apples, Bananas, etc.)</option>
           <option value="Medium">Medium (Broccoli, Carrots, etc.)</option>
           <option value="High">High (Kale, Spinach, etc.)</option>
+          <option value="ExtraHigh">Extra High (Large leafy greens, Liver, etc.)</option>
         </select>
       </div>
 
