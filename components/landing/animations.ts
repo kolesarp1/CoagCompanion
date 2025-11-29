@@ -1,13 +1,13 @@
 export const fadeInUp = {
   initial: { opacity: 0, y: 40 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: "easeOut" }
+  transition: { duration: 0.6, ease: [0, 0, 0.58, 1] as const }
 };
 
 export const fadeInScale = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
-  transition: { duration: 0.5, ease: "easeOut" }
+  transition: { duration: 0.5, ease: [0, 0, 0.58, 1] as const }
 };
 
 export const staggerContainer = {
@@ -21,13 +21,13 @@ export const staggerContainer = {
 export const slideInLeft = {
   initial: { opacity: 0, x: -40 },
   animate: { opacity: 1, x: 0 },
-  transition: { duration: 0.6, ease: "easeOut" }
+  transition: { duration: 0.6, ease: [0, 0, 0.58, 1] as const }
 };
 
 export const slideInRight = {
   initial: { opacity: 0, x: 40 },
   animate: { opacity: 1, x: 0 },
-  transition: { duration: 0.6, ease: "easeOut" }
+  transition: { duration: 0.6, ease: [0, 0, 0.58, 1] as const }
 };
 
 export const pulseGlow = {
@@ -40,7 +40,7 @@ export const pulseGlow = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: [0.42, 0, 0.58, 1] as const
     }
   }
 };
@@ -48,7 +48,7 @@ export const pulseGlow = {
 export const heroAnimation = {
   initial: { opacity: 0, y: 40 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
+  transition: { duration: 0.8, ease: [0, 0, 0.58, 1] as const }
 };
 
 export const heroStagger = {
