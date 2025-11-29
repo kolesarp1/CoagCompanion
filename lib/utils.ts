@@ -93,6 +93,8 @@ export function calculateDashboardStats(
     lastINR,
     lastINRDate,
     lastINRType,
+    testTime: settings.inrTestTime || '10:00',
+    doseTime: settings.doseTime || '13:00',
   };
 }
 

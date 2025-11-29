@@ -31,6 +31,8 @@ export interface DashboardStats {
   lastINR: number | null;
   lastINRDate: string | null;
   lastINRType: 'lab' | 'home' | null;
+  testTime: string;
+  doseTime: string;
 }
 
 export type VitaminKCategory = 'Low' | 'Medium' | 'High' | 'ExtraHigh' | 'Custom';

@@ -10,6 +10,7 @@ import { TimeInRange } from "@/components/charts/TimeInRange";
 import { INRVariability } from "@/components/charts/INRVariability";
 import { VitaminKChart } from "@/components/charts/VitaminKChart";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
+import { DashboardQuickStats } from "@/components/dashboard/DashboardQuickStats";
 import { supabaseStorage } from "@/lib/supabase-storage";
 import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
 import { createClient } from "@/lib/supabase/client";
@@ -225,66 +226,24 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card animate>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Current INR Target
-            </p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {stats.currentTarget}
-            </p>
-          </div>
-        </Card>
-
-        <Card animate>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Last INR ({stats.lastINRType === "home" ? "Home" : "Lab"})
-            </p>
-            <p className={`text-2xl font-bold ${inrColor}`}>
-              {stats.lastINR !== null ? stats.lastINR.toFixed(1) : "N/A"}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              {stats.lastINRDate
-                ? new Date(stats.lastINRDate).toLocaleDateString()
-                : ""}
-            </p>
-          </div>
-        </Card>
-
-        <Card animate>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Avg INR ({dateRange === "all" ? "All Time" : dateRangeOptions.find(o => o.value === dateRange)?.label})
-            </p>
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length > 0
-                ? (
-                    filteredLogs
-                      .filter(l => l.homeINR !== null || l.labINR !== null)
-                      .reduce((sum, l) => sum + (l.homeINR || l.labINR!), 0) /
-                    filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length
-                  ).toFixed(1)
-                : "N/A"}
-            </p>
-          </div>
-        </Card>
-
-        <Card animate>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              Readings in Period
-            </p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {filteredLogs.filter(l => l.homeINR !== null || l.labINR !== null).length}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              INR measurements
-            </p>
-          </div>
-        </Card>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
+          Your Health at a Glance
+        </h2>
+        <DashboardQuickStats
+          logs={logs}
+          targetMin={targetMin}
+          targetMax={targetMax}
+          testTime={stats.testTime}
+          doseTime={stats.doseTime}
+          isAuthenticated={isAuthenticated}
+          onNewReading={loadData}
+        />
+      </motion.div>
 
       {stats.recentAlerts.length > 0 && (
         <motion.div
