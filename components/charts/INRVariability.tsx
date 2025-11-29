@@ -88,10 +88,11 @@ export const INRVariability: React.FC<INRVariabilityProps> = ({
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#1f2937",
-            border: "1px solid #374151",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #e5e7eb",
             borderRadius: "8px",
-            color: "#fff",
+            color: "#1f2937",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
           labelFormatter={(label, payload) => {
             if (payload && payload.length > 0) {

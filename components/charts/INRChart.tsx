@@ -72,10 +72,11 @@ export const INRChart: React.FC<INRChartProps> = ({
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#1f2937",
-            border: "1px solid #374151",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #e5e7eb",
             borderRadius: "8px",
-            color: "#fff",
+            color: "#1f2937",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
           labelFormatter={(label, payload) => {
             if (payload && payload.length > 0) {
@@ -93,17 +94,44 @@ export const INRChart: React.FC<INRChartProps> = ({
         {showArea && (
           <>
             <defs>
+              <linearGradient id="lowZone" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#fca5a5" stopOpacity={0.3}/>
+                <stop offset="100%" stopColor="#fca5a5" stopOpacity={0.15}/>
+              </linearGradient>
               <linearGradient id="targetZone" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
+                <stop offset="0%" stopColor="#86efac" stopOpacity={0.3}/>
+                <stop offset="100%" stopColor="#86efac" stopOpacity={0.15}/>
+              </linearGradient>
+              <linearGradient id="highZone" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#fdba74" stopOpacity={0.3}/>
+                <stop offset="100%" stopColor="#fdba74" stopOpacity={0.15}/>
               </linearGradient>
             </defs>
+            {/* Low zone: 0-2 (light red) */}
             <Area
-              type="monotone"
-              dataKey="targetMax"
+              type="stepAfter"
+              dataKey={() => 2}
+              stroke="none"
+              fill="url(#lowZone)"
+              fillOpacity={1}
+            />
+            {/* Target zone: 2-3 (light green) */}
+            <Area
+              type="stepAfter"
+              dataKey={() => targetMax}
               stroke="none"
               fill="url(#targetZone)"
-              fillOpacity={0.3}
+              fillOpacity={1}
+              baseValue={2}
+            />
+            {/* High zone: 3-5 (light orange) */}
+            <Area
+              type="stepAfter"
+              dataKey={() => 5}
+              stroke="none"
+              fill="url(#highZone)"
+              fillOpacity={1}
+              baseValue={targetMax}
             />
           </>
         )}

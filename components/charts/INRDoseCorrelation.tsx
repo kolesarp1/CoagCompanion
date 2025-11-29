@@ -72,10 +72,11 @@ export const INRDoseCorrelation: React.FC<INRDoseCorrelationProps> = ({
         <ZAxis range={[100, 100]} />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#1f2937",
-            border: "1px solid #374151",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #e5e7eb",
             borderRadius: "8px",
-            color: "#fff",
+            color: "#1f2937",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
           cursor={{ strokeDasharray: "3 3" }}
           formatter={(value: any, name: string) => {
