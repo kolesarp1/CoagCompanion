@@ -71,6 +71,17 @@ export const DoseSuggestionCard: React.FC<DoseSuggestionCardProps> = ({
           </p>
         </div>
 
+        {suggestion.vitaminKSuggestion && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+              💊 Vitamin K Recommendation:
+            </p>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              {suggestion.vitaminKSuggestion}
+            </p>
+          </div>
+        )}
+
         {suggestion.warning && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <p className="text-sm font-medium text-red-800 dark:text-red-400">

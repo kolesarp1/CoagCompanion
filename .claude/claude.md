@@ -1,13 +1,4 @@
-# CoagCompanion - Claude Code Project Guide
-
-## Project: Warfarin Anticoagulation Monitoring Web Application
-
-**CoagCompanion** is a personal health monitoring application for tracking Warfarin anticoagulation therapy. It helps users monitor INR (International Normalized Ratio) levels, warfarin dosages, and provides intelligent dose suggestions based on historical data.
-
-**Live URL**: https://coagcompanion.netlify.app
-**Version**: 1.0.0
-**Last Updated**: 2025-11-29
-**Maintained By**: kolesarp1@gmail.com
+**CoagCompanion** is a personal health monitoring application for tracking Warfarin anticoagulation therapy. It helps users monitor INR (International Normalized Ratio) levels, warfarin dosages, K intake in diet and provides intelligent dose suggestions based on historical data and medical community calculation formulas.
 
 ---
 
@@ -209,99 +200,7 @@ CREATE TABLE settings (
 );
 ```
 
-### Row Level Security (RLS) Policies
-
-**Critical**: All tables MUST have RLS enabled. Users can only access their own data.
-
-```sql
--- Enable RLS
-ALTER TABLE logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
-
--- Policies for logs
-CREATE POLICY "Users can view own logs"
-  ON logs FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own logs"
-  ON logs FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own logs"
-  ON logs FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own logs"
-  ON logs FOR DELETE
-  USING (auth.uid() = user_id);
-
--- Policies for settings (similar pattern)
-```
-
-### Database Triggers
-
-**Auto-create settings**: New users automatically get default settings row.
-
-```sql
-CREATE FUNCTION create_user_settings()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO settings (user_id)
-  VALUES (NEW.id);
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION create_user_settings();
-```
-
----
-
 ## Code Standards
-
-### TypeScript Standards
-
-**Strict Mode (tsconfig.json)**:
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
-  }
-}
-```
-
-**Rules**:
-- ❌ **NEVER** use `any` or `@ts-ignore`
-- ✅ Explicit return types for all functions
-- ✅ Use `type` for data shapes, `interface` for object contracts
-- ✅ Use `unknown` for truly unknown types (then narrow with type guards)
-- ✅ Prefer `const` over `let`, avoid `var`
-- ✅ Use optional chaining (`?.`) and nullish coalescing (`??`)
-
-**Examples**:
-```typescript
-// ✅ Good
-function calculateTTR(logs: Log[], targetMin: number, targetMax: number): number {
-  const inRangeLogs = logs.filter(log => {
-    const inr = log.lab_inr ?? log.home_inr;
-    return inr !== null && inr >= targetMin && inr <= targetMax;
-  });
-  return (inRangeLogs.length / logs.length) * 100;
-}
-
-// ❌ Bad
-function calculateTTR(logs: any, targetMin: any, targetMax: any) {
-  // No types, implicit any
-  return logs.filter(log => log.inr >= targetMin && log.inr <= targetMax).length / logs.length * 100;
-}
-```
 
 ### Component Standards
 
@@ -310,51 +209,6 @@ function calculateTTR(logs: any, targetMin: any, targetMax: any) {
 - ≤50 lines per function
 - ≤4 parameters per function
 - ≤3 levels of nesting
-
-**Naming Conventions**:
-- **Components**: `PascalCase.tsx` (e.g., `INRChart.tsx`)
-- **Utilities**: `camelCase.ts` (e.g., `dose-algorithm.ts`)
-- **Functions**: `camelCase` (e.g., `calculateDoseSuggestion`)
-- **Constants**: `UPPER_SNAKE_CASE` (e.g., `TARGET_INR_MIN`)
-- **Types/Interfaces**: `PascalCase` (e.g., `Log`, `UserSettings`)
-
-**Component Patterns**:
-```typescript
-// ✅ Good: Functional component with explicit props type
-interface INRChartProps {
-  logs: Log[];
-  targetMin: number;
-  targetMax: number;
-}
-
-export function INRChart({ logs, targetMin, targetMax }: INRChartProps) {
-  // Use useMemo for expensive calculations
-  const chartData = useMemo(() => {
-    return logs.map(log => ({
-      date: format(new Date(log.date), 'MM/dd'),
-      inr: log.lab_inr ?? log.home_inr,
-    }));
-  }, [logs]);
-
-  return (
-    <Card>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          {/* Chart configuration */}
-        </LineChart>
-      </ResponsiveContainer>
-    </Card>
-  );
-}
-```
-
-**React Best Practices**:
-- ✅ Use `useMemo` for expensive calculations (e.g., chart data processing)
-- ✅ Use `useCallback` for event handlers passed to child components
-- ✅ Use `React.memo` for pure components that render frequently
-- ✅ Destructure props in function signature
-- ✅ Code-split heavy components (e.g., charts) with `dynamic` import if needed
-- ✅ Always clean up side effects in `useEffect` (return cleanup function)
 
 ### Separation of Concerns
 
@@ -375,37 +229,6 @@ Business Logic (lib/)
 Data Access Layer (supabase-storage.ts)
   ↓
 Supabase (Database)
-```
-
-**Example**:
-```typescript
-// ❌ Bad: Business logic in component
-function DashboardPage() {
-  const [ttr, setTTR] = useState(0);
-
-  useEffect(() => {
-    const inRangeLogs = logs.filter(log => {
-      const inr = log.lab_inr ?? log.home_inr;
-      return inr >= 2.0 && inr <= 3.0;
-    });
-    setTTR((inRangeLogs.length / logs.length) * 100);
-  }, [logs]);
-}
-
-// ✅ Good: Business logic in lib/, component uses it
-// lib/utils.ts
-export function calculateTTR(logs: Log[], targetMin: number, targetMax: number): number {
-  const inRangeLogs = logs.filter(log => {
-    const inr = log.lab_inr ?? log.home_inr;
-    return inr !== null && inr >= targetMin && inr <= targetMax;
-  });
-  return (inRangeLogs.length / logs.length) * 100;
-}
-
-// app/dashboard/page.tsx
-function DashboardPage() {
-  const ttr = useMemo(() => calculateTTR(logs, 2.0, 3.0), [logs]);
-}
 ```
 
 ### Security Standards
@@ -459,78 +282,16 @@ export const LogSchema = z.object({
 - ✅ **Tree Shaking**: Import only what you need (e.g., `import { format } from 'date-fns'`)
 - ✅ **Lazy Loading**: Load charts only when visible (future: IntersectionObserver)
 
-**Example**:
-```typescript
-// ✅ Good: Memoize chart data
-const chartData = useMemo(() => {
-  return logs.map(log => ({
-    date: format(new Date(log.date), 'MM/dd'),
-    inr: log.lab_inr ?? log.home_inr,
-  }));
-}, [logs]);
-
-// ❌ Bad: Recalculate on every render
-const chartData = logs.map(log => ({ /* ... */ }));
-```
-
 ### Error Handling
 
 **Error Boundaries**:
 - Add to `app/layout.tsx` for global error catching
 - Component-level boundaries for critical features (charts, forms)
 
-**User-Friendly Messages**:
-```typescript
-// ✅ Good
-try {
-  await supabaseStorage.addLog(logData);
-  toast.success('Log entry saved successfully');
-} catch (error) {
-  console.error('Error saving log:', error);
-  toast.error('Failed to save log. Please try again.');
-}
-
-// ❌ Bad
-try {
-  await supabaseStorage.addLog(logData);
-} catch (error) {
-  alert(error.message); // Technical error exposed to user
-}
-```
-
 **Fallbacks**:
 - Empty states for no data (e.g., "No logs yet. Add your first entry!")
 - Loading states for async operations (spinner, skeleton)
 - Error states for failed requests (retry button, helpful message)
-
-### Accessibility Standards
-
-**WCAG 2.1 Level AA Compliance**:
-- ✅ **ARIA Labels**: All interactive elements have accessible names
-- ✅ **Keyboard Navigation**: All features accessible via keyboard (Tab, Enter, Esc)
-- ✅ **Color Contrast**: Minimum 4.5:1 ratio (text), 3:1 (UI elements)
-- ✅ **Semantic HTML**: Use `<button>`, `<nav>`, `<main>`, `<form>` appropriately
-- ✅ **Focus Indicators**: Visible focus outline on interactive elements
-- ✅ **Screen Readers**: Test with NVDA/JAWS/VoiceOver
-
-**Example**:
-```typescript
-// ✅ Good
-<button
-  aria-label="Delete log entry"
-  onClick={handleDelete}
-  className="focus:ring-2 focus:ring-blue-500"
->
-  <TrashIcon aria-hidden="true" />
-</button>
-
-// ❌ Bad
-<div onClick={handleDelete}>
-  <TrashIcon />
-</div>
-```
-
----
 
 ## Environment Variables
 
@@ -540,28 +301,6 @@ try {
 NEXT_PUBLIC_SUPABASE_URL=https://bpgkksjksbkkglcxxooi.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
-
-### Local Development
-
-1. Copy `.env.example` to `.env.local`
-2. Fill in your Supabase credentials from [Supabase Dashboard](https://supabase.com/dashboard/project/bpgkksjksbkkglcxxooi)
-3. Never commit `.env.local` (already in `.gitignore`)
-
-### Environment Variable Access
-
-**Important**: Due to Next.js 13+ App Router changes, use the custom `env.ts` loader:
-
-```typescript
-// ✅ Correct (Next.js 13+)
-import { env } from '@/env';
-
-const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-// ❌ Deprecated (causes "process is not defined" in browser)
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-```
-
----
 
 ## Quality Gates
 
@@ -579,155 +318,14 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 - [ ] **RLS Policies**: Tested data isolation between users
 - [ ] **Performance**: Lighthouse score ≥90
 - [ ] **Security**: No secrets in code, input validation working
-- [ ] **Accessibility**: Keyboard navigation, screen reader tested
 
 ### Feature Completeness Checklist
 - [ ] **Functionality**: Feature works as intended (happy path)
 - [ ] **Error Handling**: Edge cases handled (empty state, errors, loading)
 - [ ] **Validation**: Form validation working (Zod schemas)
-- [ ] **UI/UX**: Responsive, accessible, dark mode support
+- [ ] **UI/UX**: Responsive, dark mode support
 - [ ] **Data Persistence**: Data saves to Supabase and persists after refresh
 - [ ] **Security**: Input sanitized, RLS policies enforced
-
----
-
-## Common Tasks
-
-### Adding a New Protected Page
-
-1. Create page in `app/your-page/page.tsx`
-2. Add `"use client"` directive (if using client hooks)
-3. Add `export const dynamic = 'force-dynamic'` (for auth-dependent data)
-4. Update `middleware.ts` to protect the route:
-   ```typescript
-   export const config = {
-     matcher: ['/dashboard', '/logs', '/your-page'],
-   };
-   ```
-5. Add navigation link in `app/layout.tsx`:
-   ```tsx
-   <Link href="/your-page" className="hover:text-blue-600">
-     Your Page
-   </Link>
-   ```
-
-### Adding a New Database Table
-
-1. **Write SQL migration** in `supabase-schema.sql`:
-   ```sql
-   CREATE TABLE your_table (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id UUID REFERENCES auth.users NOT NULL,
-     -- Add columns
-     created_at TIMESTAMP DEFAULT NOW()
-   );
-
-   -- Enable RLS
-   ALTER TABLE your_table ENABLE ROW LEVEL SECURITY;
-
-   -- Add policies (SELECT, INSERT, UPDATE, DELETE)
-   CREATE POLICY "Users can view own records"
-     ON your_table FOR SELECT
-     USING (auth.uid() = user_id);
-   ```
-
-2. **Add TypeScript types** in `lib/database.types.ts`:
-   ```typescript
-   export interface YourTable {
-     id: string;
-     user_id: string;
-     created_at: string;
-   }
-   ```
-
-3. **Update data access layer** in `lib/supabase-storage.ts`:
-   ```typescript
-   async getYourRecords(): Promise<YourTable[]> {
-     const { data, error } = await this.supabase
-       .from('your_table')
-       .select('*')
-       .order('created_at', { ascending: false });
-
-     if (error) throw error;
-     return data || [];
-   }
-   ```
-
-4. **Test RLS policies**: Create test users, ensure data isolation
-
-### Adding a New Chart
-
-1. **Create component** in `components/charts/YourChart.tsx`:
-   ```typescript
-   'use client';
-
-   import { useMemo } from 'react';
-   import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-   import { Card } from '@/components/ui/Card';
-
-   interface YourChartProps {
-     data: YourData[];
-   }
-
-   export function YourChart({ data }: YourChartProps) {
-     const chartData = useMemo(() => {
-       // Process data for chart
-       return data.map(/* ... */);
-     }, [data]);
-
-     return (
-       <Card>
-         <h2 className="text-lg font-semibold mb-4">Your Chart Title</h2>
-         <ResponsiveContainer width="100%" height={300}>
-           <LineChart data={chartData}>
-             <XAxis dataKey="date" />
-             <YAxis />
-             <Tooltip />
-             <Line type="monotone" dataKey="value" stroke="#3b82f6" />
-           </LineChart>
-         </ResponsiveContainer>
-       </Card>
-     );
-   }
-   ```
-
-2. **Add to dashboard** in `app/dashboard/page.tsx`:
-   ```typescript
-   import { YourChart } from '@/components/charts/YourChart';
-
-   export default function Dashboard() {
-     return (
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-         <YourChart data={yourData} />
-       </div>
-     );
-   }
-   ```
-
-3. **Ensure responsive design**: Test on mobile, tablet, desktop
-
-### Deploying Changes
-
-1. **Commit changes**:
-   ```bash
-   git add -A
-   git commit -m "feat: Add your feature description"
-   ```
-
-2. **Push to GitHub** (using SSH key):
-   ```bash
-   git push
-   # or with explicit SSH key:
-   GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519" git push
-   ```
-
-3. **Netlify auto-deploys** from `master` branch
-
-4. **Check deploy logs** at [Netlify Dashboard](https://app.netlify.com) if build fails
-
-5. **Test production**: Visit https://coagcompanion.netlify.app and verify changes
-
----
 
 ## Authentication Flow
 
@@ -753,32 +351,6 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 3. If authenticated: Allow access
 4. If not authenticated: Redirect to `/login?redirect=/dashboard`
 5. After login: Redirect back to original destination
-
----
-
-## Data Migration
-
-### localStorage → Supabase
-
-**Migration Flow**:
-1. User signs up or logs in
-2. `MigrationPrompt.tsx` checks for localStorage data:
-   ```typescript
-   const hasLocalData = localStorage.getItem('coagcompanion_logs') !== null;
-   ```
-3. If data exists: Show blue prompt card with "Migrate Data" button
-4. User clicks button → Calls `migrateToSupabase()` from `lib/migrate-to-supabase.ts`
-5. Migration function:
-   - Reads localStorage data
-   - Validates with Zod schemas
-   - Inserts into Supabase (logs, settings)
-   - Clears localStorage after success
-6. Success toast: "Data migrated successfully!"
-
-**Migration Safety**:
-- ✅ Non-destructive: Keeps localStorage until user confirms migration worked
-- ✅ Validation: Ensures data integrity with Zod before insert
-- ✅ Rollback: User can re-migrate if first attempt fails (idempotent)
 
 ---
 
@@ -899,14 +471,6 @@ localStorage.setItem('theme', isDark ? 'dark' : 'light');
 - **Netlify Dashboard**: https://app.netlify.com
 - **Supabase Dashboard**: https://supabase.com/dashboard/project/bpgkksjksbkkglcxxooi
 
-### Documentation
-- **Next.js Docs**: https://nextjs.org/docs
-- **Supabase Docs**: https://supabase.com/docs
-- **Tailwind CSS**: https://tailwindcss.com/docs
-- **Recharts**: https://recharts.org/en-US
-- **React Hook Form**: https://react-hook-form.com
-- **Zod**: https://zod.dev
-
 ### Healthcare Standards
 - **INR Reference**: https://www.ncbi.nlm.nih.gov/books/NBK507707/
 - **Warfarin Dosing**: https://www.ahajournals.org/doi/10.1161/CIRCULATIONAHA.107.185132
@@ -938,51 +502,6 @@ localStorage.setItem('theme', isDark ? 'dark' : 'light');
 2. **Seed Source**: Real historical data from September-November 2025
 3. **Automatic Switch**: User data loads after authentication
 
----
-
-## Quick Reference
-
-### Commands
-```bash
-# Development
-npm install              # Install dependencies
-npm run dev             # Start dev server (http://localhost:3000)
-npm run build           # Production build
-npm run start           # Start production server locally
-npm run lint            # Run ESLint
-npm run lint -- --fix   # Auto-fix linting issues
-
-# Git (with SSH key)
-git add -A && git commit -m "message"
-git push                # Auto-deploy to Netlify
-GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519" git push  # Explicit SSH key
-
-# Netlify
-# Deploys automatically on push to master
-# Check logs: https://app.netlify.com
-```
-
-### Key Files
-- **Environment**: `.env.local` (local), Netlify dashboard (production)
-- **Database Schema**: `supabase-schema.sql`
-- **Types**: `lib/database.types.ts`, `lib/types.ts`
-- **Validation**: `lib/schemas.ts`
-- **Data Access**: `lib/supabase-storage.ts`
-- **Auth Config**: `lib/supabase/client.ts`, `lib/supabase/server.ts`
-- **Middleware**: `middleware.ts` (route protection)
-
-### Environment Access
-```typescript
-// ✅ Correct
-import { env } from '@/env';
-console.log(env.NEXT_PUBLIC_SUPABASE_URL);
-
-// ❌ Wrong
-console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
-```
-
----
-
 ## Version History
 
 ### v1.0.0 (2025-11-27)
@@ -1001,13 +520,6 @@ console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
 - ✅ Form validation (React Hook Form + Zod)
 - ✅ Environment variable loader for Next.js 13+
 - ✅ Medical disclaimer
-
-### Roadmap (Future Versions)
-- [ ] **v1.1.0**: Automated testing (Jest, Playwright)
-- [ ] **v1.2.0**: Export/import data (CSV, JSON)
-- [ ] **v1.3.0**: Email notifications for INR reminders
-- [ ] **v2.0.0**: Multi-user clinic mode (doctor-patient relationship)
-- [ ] **v2.1.0**: Advanced analytics (machine learning predictions)
 
 ---
 

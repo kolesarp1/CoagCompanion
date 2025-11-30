@@ -19,11 +19,16 @@ export function getLast7Days(
   today.setHours(0, 0, 0, 0); // Reset to midnight for date comparison
 
   // Create a map of logs by date (YYYY-MM-DD format) for quick lookup
+  // If multiple logs exist for same day, keep the one with latest timestamp
   const logsByDate = new Map<string, Log>();
   logs.forEach((log) => {
     const logDate = new Date(log.date);
     const dateKey = logDate.toISOString().split("T")[0];
-    logsByDate.set(dateKey, log);
+
+    const existing = logsByDate.get(dateKey);
+    if (!existing || new Date(log.date) > new Date(existing.date)) {
+      logsByDate.set(dateKey, log);
+    }
   });
 
   // Iterate backward from today to today-6 (7 days total)

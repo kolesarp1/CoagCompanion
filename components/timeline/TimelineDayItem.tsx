@@ -19,18 +19,25 @@ export const TimelineDayItem = React.memo(function TimelineDayItem({
   targetMax,
   isLast,
 }: TimelineDayItemProps): React.ReactElement {
-  // Determine dot color based on INR status
+  // Determine dot color based on Vitamin K intake
   const getDotColor = (): string => {
-    switch (dayItem.inrStatus) {
-      case "in-range":
-        return "bg-green-500 border-green-600";
-      case "near-miss":
-        return "bg-yellow-500 border-yellow-600";
-      case "out-of-range":
-        return "bg-red-500 border-red-600";
-      default:
-        return "bg-gray-400 dark:bg-gray-600 border-gray-500 dark:border-gray-700";
+    if (!dayItem.log || !dayItem.log.vitaminKIntake) {
+      return "bg-gray-400 dark:bg-gray-600 border-gray-500 dark:border-gray-700";
     }
+
+    const vitaminK = dayItem.log.vitaminKIntake.toLowerCase();
+
+    if (vitaminK.includes("none") || vitaminK.includes("low")) {
+      return "bg-green-500 border-green-600";
+    } else if (vitaminK.includes("medium")) {
+      return "bg-yellow-500 border-yellow-600";
+    } else if (vitaminK.includes("high") && !vitaminK.includes("very") && !vitaminK.includes("extra")) {
+      return "bg-orange-500 border-orange-600";
+    } else if (vitaminK.includes("very") || vitaminK.includes("extra")) {
+      return "bg-red-500 border-red-600";
+    }
+
+    return "bg-blue-500 border-blue-600"; // Custom values
   };
 
   const hasData = dayItem.log !== null;
@@ -55,7 +62,11 @@ export const TimelineDayItem = React.memo(function TimelineDayItem({
 
     const doseText = dayItem.dose ? `Warfarin dose ${dayItem.dose} milligrams` : "No dose recorded";
 
-    return `${dayItem.dayOfWeek}, ${dayItem.shortDate}. ${inrText}. ${doseText}. ${hasExpandableData ? "Press Enter for details." : ""}`;
+    const vitaminKText = dayItem.log?.vitaminKIntake
+      ? `Vitamin K intake: ${formatVitaminK(dayItem.log.vitaminKIntake)}`
+      : "No vitamin K data";
+
+    return `${dayItem.dayOfWeek}, ${dayItem.shortDate}. ${inrText}. ${doseText}. ${vitaminKText}. ${hasExpandableData ? "Press Enter for details." : ""}`;
   };
 
   return (

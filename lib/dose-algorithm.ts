@@ -71,6 +71,7 @@ export function calculateDoseSuggestion(
   let maintenanceDoseChange = "No change";
   let reasoning = "";
   let warning: string | undefined;
+  let vitaminKSuggestion: string | undefined;
 
   if (currentINR < 1.5) {
     const suggestedAvg = avgMaintenanceDose * 1.75; // 75% increase (middle of 50-100%)
@@ -83,6 +84,7 @@ export function calculateDoseSuggestion(
     )}). Suggested one-time dose increase of 75% and maintenance increase of 15%.`;
     warning =
       "INR is critically low. Contact your doctor immediately and consider bridging with injections.";
+    vitaminKSuggestion = "Low (60-90 mcg/day) - Avoid high vitamin K foods while INR is low to allow warfarin to work more effectively.";
   } else if (currentINR >= 1.5 && currentINR < 2.0) {
     const suggestedAvg = avgMaintenanceDose * 1.5; // 50% increase
     const suggestion = generateAlternatingPattern(suggestedAvg);
@@ -93,6 +95,7 @@ export function calculateDoseSuggestion(
       1
     )}). Suggested one-time dose increase of 50% and maintenance increase of 10%.`;
     warning = "Consider bridging with Fraxiparine injections until INR is in range.";
+    vitaminKSuggestion = "Low to Medium (80-120 mcg/day) - Keep intake consistent and slightly lower to allow INR to rise.";
   } else if (currentINR >= 2.0 && currentINR <= 3.0) {
     suggestedDose = currentMaintenanceDose;
     suggestedPattern = maintenancePattern.pattern;
@@ -100,6 +103,7 @@ export function calculateDoseSuggestion(
     reasoning = `INR is within target range (${currentINR.toFixed(
       1
     )}). Continue current maintenance dose.${suggestedPattern ? ' ' + suggestedPattern : ''}`;
+    vitaminKSuggestion = "Medium (100-150 mcg/day) - Maintain consistent daily intake to keep INR stable in therapeutic range.";
   } else if (currentINR > 3.0 && currentINR <= 4.0) {
     const suggestedAvg = avgMaintenanceDose * 0.5; // 50% decrease
     const suggestion = generateAlternatingPattern(suggestedAvg);
@@ -110,6 +114,7 @@ export function calculateDoseSuggestion(
       1
     )}). Suggested one-time dose reduction of 50% and maintenance decrease of 7.5%.`;
     warning = "INR is elevated. Monitor closely and avoid high vitamin K foods.";
+    vitaminKSuggestion = "Medium to High (120-180 mcg/day) - Slightly increase vitamin K intake to help lower INR naturally. Eat more leafy greens.";
   } else if (currentINR > 4.0) {
     suggestedDose = 0; // Hold dose
     suggestedPattern = undefined;
@@ -117,6 +122,7 @@ export function calculateDoseSuggestion(
     reasoning = `INR is dangerously high (${currentINR.toFixed(1)}). DO NOT take today's dose.`;
     warning =
       "⚠️ CRITICAL: INR is dangerously high. HOLD today's dose and contact your doctor IMMEDIATELY. Risk of bleeding.";
+    vitaminKSuggestion = "High (150-250 mcg/day) - Increase vitamin K intake significantly (spinach, kale, broccoli) to help lower INR. Consult doctor first.";
   }
 
   return {
@@ -126,5 +132,6 @@ export function calculateDoseSuggestion(
     maintenanceDoseChange,
     reasoning,
     warning,
+    vitaminKSuggestion,
   };
 }

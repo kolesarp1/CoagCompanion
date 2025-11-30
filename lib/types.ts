@@ -16,6 +16,7 @@ export interface DoseSuggestion {
   maintenanceDoseChange: string;
   reasoning: string;
   warning?: string;
+  vitaminKSuggestion?: string; // Suggested vitamin K intake for the day
 }
 
 export interface INRPrediction {

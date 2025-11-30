@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/Card";
 import { DashboardQuickStats } from "@/components/dashboard/DashboardQuickStats";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
 import { SevenDayHistory } from "@/components/timeline/SevenDayHistory";
+import { WarfarinEducation } from "@/components/education/WarfarinEducation";
+import { VitaminKEducation } from "@/components/education/VitaminKEducation";
+import { TypicalPatientEducation } from "@/components/education/TypicalPatientEducation";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseStorage } from "@/lib/supabase-storage";
 import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
@@ -182,6 +185,23 @@ export default function HomePage() {
             </Card>
           </motion.div>
         )}
+
+        {/* Educational Resources Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
+            Educational Resources
+          </h2>
+          <div className="space-y-4">
+            <WarfarinEducation />
+            <VitaminKEducation />
+            <TypicalPatientEducation />
+          </div>
+        </motion.div>
       </div>
     </main>
   );
