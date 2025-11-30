@@ -22,7 +22,9 @@
       "Bash(curl:*)",
       "Bash(copy:*)",
       "Bash(GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519\" git push:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(if not exist \"C:\\Users\\koles\\.claude\\plans\" mkdir \"C:\\Users\\koles\\.claude\\plans\")",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

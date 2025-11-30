@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { DashboardQuickStats } from "@/components/dashboard/DashboardQuickStats";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
+import { SevenDayHistory } from "@/components/timeline/SevenDayHistory";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseStorage } from "@/lib/supabase-storage";
 import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
@@ -126,12 +127,28 @@ export default function HomePage() {
           </motion.div>
         )}
 
+        {/* 7-Day History Timeline */}
+        {logs.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <SevenDayHistory
+              logs={logs}
+              targetMin={targetMin}
+              targetMax={targetMax}
+            />
+          </motion.div>
+        )}
+
         {/* INR Predictions Section */}
         {predictions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4 }}
             className="mb-8"
           >
             <Card>
