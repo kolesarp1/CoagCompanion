@@ -4,15 +4,22 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const type = requestUrl.searchParams.get('type')
   const origin = requestUrl.origin
-  const redirectTo = requestUrl.searchParams.get('redirect') || '/dashboard'
+  const next = requestUrl.searchParams.get('next') || '/dashboard'
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      return NextResponse.redirect(`${origin}${redirectTo}`)
+      // If this is a password recovery flow, redirect to update-password page
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/auth/update-password`)
+      }
+
+      // Otherwise, redirect to the intended destination (OAuth or normal login)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 

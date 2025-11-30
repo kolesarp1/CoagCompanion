@@ -73,21 +73,21 @@ export const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
             href={landingContent.cta.ctaPrimaryUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1"
+            className="flex-1 min-w-[200px]"
           >
-            <Button variant="primary" size="lg" className="w-full bg-white text-purple-600 hover:bg-gray-100">
+            <Button variant="primary" size="lg" className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold">
               {landingContent.cta.ctaPrimary}
             </Button>
           </a>
           {isAuthenticated ? (
-            <Link href="/dashboard" className="flex-1">
-              <Button variant="secondary" size="lg" className="w-full border-2 border-white text-white hover:bg-white/10">
+            <Link href="/dashboard" className="flex-1 min-w-[200px]">
+              <Button variant="primary" size="lg" className="w-full bg-purple-700 text-white hover:bg-purple-800 font-bold">
                 Go to Dashboard
               </Button>
             </Link>
           ) : (
-            <Link href="/signup" className="flex-1">
-              <Button variant="secondary" size="lg" className="w-full border-2 border-white text-white hover:bg-white/10">
+            <Link href="/signup" className="flex-1 min-w-[200px]">
+              <Button variant="primary" size="lg" className="w-full bg-purple-700 text-white hover:bg-purple-800 font-bold">
                 {landingContent.cta.ctaSecondary}
               </Button>
             </Link>

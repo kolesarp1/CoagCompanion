@@ -226,24 +226,26 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
-          Your Health at a Glance
-        </h2>
-        <DashboardQuickStats
-          logs={logs}
-          targetMin={targetMin}
-          targetMax={targetMax}
-          testTime={stats.testTime}
-          doseTime={stats.doseTime}
-          isAuthenticated={isAuthenticated}
-          onNewReading={loadData}
-        />
-      </motion.div>
+      {viewMode === "overview" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
+            Your Health at a Glance
+          </h2>
+          <DashboardQuickStats
+            logs={logs}
+            targetMin={targetMin}
+            targetMax={targetMax}
+            testTime={stats.testTime}
+            doseTime={stats.doseTime}
+            isAuthenticated={isAuthenticated}
+            onNewReading={loadData}
+          />
+        </motion.div>
+      )}
 
       {stats.recentAlerts.length > 0 && (
         <motion.div
@@ -271,7 +273,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {doseSuggestion && (
+      {viewMode === "overview" && doseSuggestion && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

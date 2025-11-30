@@ -10,6 +10,8 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -49,6 +51,28 @@ export function LoginForm() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address first");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setResetSent(true);
+      setLoading(false);
+    }
+  };
+
   const inputClasses =
     "w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all";
 
@@ -57,6 +81,12 @@ export function LoginForm() {
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
           {error}
+        </div>
+      )}
+
+      {resetSent && (
+        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
+          Password reset email sent! Check your inbox and click the link to reset your password.
         </div>
       )}
 
@@ -81,12 +111,22 @@ export function LoginForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Password
+            </label>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={loading || !email}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Forgot Password?
+            </button>
+          </div>
           <input
             id="password"
             type="password"
@@ -97,6 +137,11 @@ export function LoginForm() {
             required
             disabled={loading}
           />
+          {!email && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Enter your email first to reset password
+            </p>
+          )}
         </div>
 
         <Button

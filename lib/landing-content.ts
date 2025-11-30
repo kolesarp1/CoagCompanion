@@ -96,7 +96,7 @@ export const landingContent = {
       "Test anytime, anywhere",
       "Medicare often covers"
     ],
-    ctaPrimary: "Order CoaguChek Device",
+    ctaPrimary: "CoaguChek® INRange",
     ctaPrimaryUrl: "https://diagnostics.roche.com/global/en/products/instruments/coaguchek-inrange.html",
     ctaSecondary: "Start Tracking with CoagCompanion",
     note: "CoaguChek device sold separately. CoagCompanion is a free app to track your results.",

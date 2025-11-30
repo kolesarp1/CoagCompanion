@@ -30,6 +30,14 @@ export default function SettingsPage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
+  // Medical Settings state
+  const [testTime, setTestTime] = useState("10:00");
+  const [doseTime, setDoseTime] = useState("13:00");
+  const [targetINRMin, setTargetINRMin] = useState(2.0);
+  const [targetINRMax, setTargetINRMax] = useState(3.0);
+  const [inrRangePreset, setInrRangePreset] = useState<"1.5-2.0" | "2.0-3.0" | "2.5-3.5" | "custom">("2.0-3.0");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -50,6 +58,32 @@ export default function SettingsPage() {
       }
 
       setUser(user);
+
+      // Load user settings
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (settings) {
+        setTestTime(settings.inr_test_time || '10:00');
+        setDoseTime(settings.dose_time || '13:00');
+        setTargetINRMin(Number(settings.target_inr_min) || 2.0);
+        setTargetINRMax(Number(settings.target_inr_max) || 3.0);
+
+        // Determine preset based on min/max values
+        if (settings.target_inr_min === 1.5 && settings.target_inr_max === 2.0) {
+          setInrRangePreset("1.5-2.0");
+        } else if (settings.target_inr_min === 2.0 && settings.target_inr_max === 3.0) {
+          setInrRangePreset("2.0-3.0");
+        } else if (settings.target_inr_min === 2.5 && settings.target_inr_max === 3.5) {
+          setInrRangePreset("2.5-3.5");
+        } else {
+          setInrRangePreset("custom");
+        }
+      }
+
       setIsLoading(false);
     };
 
@@ -119,6 +153,57 @@ export default function SettingsPage() {
       toast.error("An unexpected error occurred");
     } finally {
       setIsResettingPassword(false);
+    }
+  };
+
+  const handlePresetChange = (preset: string) => {
+    setInrRangePreset(preset as any);
+
+    if (preset === "1.5-2.0") {
+      setTargetINRMin(1.5);
+      setTargetINRMax(2.0);
+    } else if (preset === "2.0-3.0") {
+      setTargetINRMin(2.0);
+      setTargetINRMax(3.0);
+    } else if (preset === "2.5-3.5") {
+      setTargetINRMin(2.5);
+      setTargetINRMax(3.5);
+    }
+    // For custom, don't change values - user will set them manually
+  };
+
+  const handleSaveSettings = async () => {
+    // Validate that min < max
+    if (targetINRMin >= targetINRMax) {
+      toast.error("Minimum INR must be less than maximum INR");
+      return;
+    }
+
+    setIsSavingSettings(true);
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('settings')
+        .update({
+          inr_test_time: testTime,
+          dose_time: doseTime,
+          target_inr_min: targetINRMin,
+          target_inr_max: targetINRMax,
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        toast.error(`Failed to save settings: ${error.message}`);
+        return;
+      }
+
+      toast.success("Medical settings saved successfully!");
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSavingSettings(false);
     }
   };
 
@@ -269,24 +354,126 @@ export default function SettingsPage() {
           </Button>
         </Card>
 
-        {/* Quick Links */}
+        {/* Medical Settings */}
         <Card>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Quick Access
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Medical Settings
           </h2>
-          <div className="space-y-2">
-            <a
-              href="/dashboard"
-              className="text-blue-600 dark:text-blue-400 hover:underline block"
+          <div className="space-y-6">
+            {/* Test Time */}
+            <div>
+              <label
+                htmlFor="testTime"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                INR Test Time
+              </label>
+              <input
+                id="testTime"
+                type="time"
+                value={testTime}
+                onChange={(e) => setTestTime(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Preferred time for blood sample collection
+              </p>
+            </div>
+
+            {/* Dose Time */}
+            <div>
+              <label
+                htmlFor="doseTime"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Warfarin Dose Time
+              </label>
+              <input
+                id="doseTime"
+                type="time"
+                value={doseTime}
+                onChange={(e) => setDoseTime(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Preferred time for daily warfarin intake
+              </p>
+            </div>
+
+            {/* INR Range Preset Dropdown */}
+            <div>
+              <label
+                htmlFor="inrRangePreset"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Target INR Range
+              </label>
+              <select
+                id="inrRangePreset"
+                value={inrRangePreset}
+                onChange={(e) => handlePresetChange(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="1.5-2.0">1.5 - 2.0 (Low intensity)</option>
+                <option value="2.0-3.0">2.0 - 3.0 (Standard)</option>
+                <option value="2.5-3.5">2.5 - 3.5 (High intensity)</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Your therapeutic INR target range
+              </p>
+            </div>
+
+            {/* Custom Range Inputs (shown only when Custom is selected) */}
+            {inrRangePreset === "custom" && (
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div>
+                  <label
+                    htmlFor="targetINRMin"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Minimum INR
+                  </label>
+                  <input
+                    id="targetINRMin"
+                    type="number"
+                    step="0.1"
+                    min="0.5"
+                    max="10.0"
+                    value={targetINRMin}
+                    onChange={(e) => setTargetINRMin(parseFloat(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="targetINRMax"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Maximum INR
+                  </label>
+                  <input
+                    id="targetINRMax"
+                    type="number"
+                    step="0.1"
+                    min="0.5"
+                    max="10.0"
+                    value={targetINRMax}
+                    onChange={(e) => setTargetINRMax(parseFloat(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Save Button */}
+            <Button
+              onClick={handleSaveSettings}
+              disabled={isSavingSettings}
+              variant="primary"
             >
-              → Go to Dashboard
-            </a>
-            <a
-              href="/logs"
-              className="text-blue-600 dark:text-blue-400 hover:underline block"
-            >
-              → Go to Logs
-            </a>
+              {isSavingSettings ? "Saving..." : "Save Medical Settings"}
+            </Button>
           </div>
         </Card>
       </div>

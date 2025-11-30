@@ -196,7 +196,7 @@ export const DashboardQuickStats: React.FC<DashboardQuickStatsProps> = ({
               fill="currentColor"
               viewBox="0 0 24 24"
             >
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+              <path d="M12,2C12,2 7,7 7,12C7,15.31 9.69,18 13,18C16.31,18 19,15.31 19,12C19,7 14,2 12,2M14.39,15.05C14.03,15.41 13.53,15.6 13,15.6C11.9,15.6 11,14.7 11,13.6C11,13.07 11.19,12.57 11.55,12.21L12,11.76L14.39,14.14C14.4,14.2 14.4,14.29 14.39,15.05Z" />
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">

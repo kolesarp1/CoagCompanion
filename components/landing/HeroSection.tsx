@@ -62,12 +62,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => 
         {isAuthenticated ? (
           <>
             <Link href="/dashboard">
-              <Button variant="primary" size="lg">
+              <Button variant="primary" size="lg" className="min-w-[200px]">
                 Go to Dashboard
               </Button>
             </Link>
             <Link href="/logs">
-              <Button variant="secondary" size="lg">
+              <Button variant="secondary" size="lg" className="min-w-[200px]">
                 View Logs
               </Button>
             </Link>
@@ -75,11 +75,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => 
         ) : (
           <>
             <Link href="/signup">
-              <Button variant="primary" size="lg">
+              <Button variant="primary" size="lg" className="min-w-[200px]">
                 {landingContent.hero.ctaPrimary}
               </Button>
             </Link>
-            <Button variant="secondary" size="lg" onClick={scrollToDemo}>
+            <Button variant="secondary" size="lg" onClick={scrollToDemo} className="min-w-[200px]">
               {landingContent.hero.ctaSecondary}
             </Button>
           </>
