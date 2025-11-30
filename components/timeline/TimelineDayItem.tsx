@@ -19,7 +19,7 @@ export const TimelineDayItem = React.memo(function TimelineDayItem({
   targetMax,
   isLast,
 }: TimelineDayItemProps): React.ReactElement {
-  // Determine dot color based on Vitamin K intake
+  // Determine dot color based on Vitamin K intake (4 hues of green)
   const getDotColor = (): string => {
     if (!dayItem.log || !dayItem.log.vitaminKIntake) {
       return "bg-gray-400 dark:bg-gray-600 border-gray-500 dark:border-gray-700";
@@ -27,17 +27,19 @@ export const TimelineDayItem = React.memo(function TimelineDayItem({
 
     const vitaminK = dayItem.log.vitaminKIntake.toLowerCase();
 
-    if (vitaminK.includes("none") || vitaminK.includes("low")) {
-      return "bg-green-500 border-green-600";
+    if (vitaminK.includes("none")) {
+      return "bg-green-200 dark:bg-green-300 border-green-300 dark:border-green-400";
+    } else if (vitaminK.includes("low")) {
+      return "bg-green-400 dark:bg-green-500 border-green-500 dark:border-green-600";
     } else if (vitaminK.includes("medium")) {
-      return "bg-yellow-500 border-yellow-600";
-    } else if (vitaminK.includes("high") && !vitaminK.includes("very") && !vitaminK.includes("extra")) {
-      return "bg-orange-500 border-orange-600";
-    } else if (vitaminK.includes("very") || vitaminK.includes("extra")) {
-      return "bg-red-500 border-red-600";
+      return "bg-green-500 dark:bg-green-600 border-green-600 dark:border-green-700";
+    } else if (vitaminK.includes("high") && !vitaminK.includes("very")) {
+      return "bg-green-600 dark:bg-green-700 border-green-700 dark:border-green-800";
+    } else if (vitaminK.includes("very")) {
+      return "bg-green-800 dark:bg-green-900 border-green-900 dark:border-green-950";
     }
 
-    return "bg-blue-500 border-blue-600"; // Custom values
+    return "bg-green-500 dark:bg-green-600 border-green-600 dark:border-green-700"; // Default green
   };
 
   const hasData = dayItem.log !== null;
@@ -129,17 +131,12 @@ export const TimelineDayItem = React.memo(function TimelineDayItem({
                 </span>
               )}
 
-              {/* Sparkline */}
-              <div className="ml-auto hidden sm:block">
-                <MiniSparkline values={sparklineData} />
-              </div>
-
               {/* Expand indicator */}
               {hasExpandableData && (
                 <motion.div
                   animate={{ rotate: isExpanded ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-gray-400 dark:text-gray-600"
+                  className="ml-auto text-gray-400 dark:text-gray-600"
                   aria-hidden="true"
                 >
                   <svg

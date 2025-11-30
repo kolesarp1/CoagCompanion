@@ -3,6 +3,18 @@ import { DayHistoryItem } from "@/components/timeline/types";
 import { getINRStatus } from "./utils";
 
 /**
+ * Get local date string in YYYY-MM-DD format without timezone conversion
+ * @param date Date object
+ * @returns Date string in YYYY-MM-DD format
+ */
+function getLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Get last 7 days of history including today
  * @param logs Array of log entries
  * @param targetMin Minimum target INR
@@ -23,7 +35,7 @@ export function getLast7Days(
   const logsByDate = new Map<string, Log>();
   logs.forEach((log) => {
     const logDate = new Date(log.date);
-    const dateKey = logDate.toISOString().split("T")[0];
+    const dateKey = getLocalDateString(logDate);
 
     const existing = logsByDate.get(dateKey);
     if (!existing || new Date(log.date) > new Date(existing.date)) {
@@ -36,7 +48,7 @@ export function getLast7Days(
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 
-    const dateKey = date.toISOString().split("T")[0];
+    const dateKey = getLocalDateString(date);
     const log = logsByDate.get(dateKey) || null;
 
     // Get INR value (prioritize homeINR, fallback to labINR)

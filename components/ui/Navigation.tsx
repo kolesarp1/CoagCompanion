@@ -66,6 +66,12 @@ export function Navigation() {
                 Logs
               </Link>
               <Link
+                href="/education"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                Education
+              </Link>
+              <Link
                 href="/about"
                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >

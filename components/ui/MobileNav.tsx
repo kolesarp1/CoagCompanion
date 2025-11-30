@@ -34,6 +34,7 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
     { href: "/", label: "Home" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/logs", label: "Logs" },
+    { href: "/education", label: "Education" },
     { href: "/about", label: "About" },
   ];
 
