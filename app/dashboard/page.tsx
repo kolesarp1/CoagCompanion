@@ -9,8 +9,6 @@ import { INRDoseCorrelation } from "@/components/charts/INRDoseCorrelation";
 import { TimeInRange } from "@/components/charts/TimeInRange";
 import { INRVariability } from "@/components/charts/INRVariability";
 import { VitaminKChart } from "@/components/charts/VitaminKChart";
-import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
-import { DashboardQuickStats } from "@/components/dashboard/DashboardQuickStats";
 import { supabaseStorage } from "@/lib/supabase-storage";
 import { getSampleLogs, getSampleSettings } from "@/lib/sample-data";
 import { createClient } from "@/lib/supabase/client";
@@ -226,27 +224,6 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {viewMode === "overview" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
-            Your Health at a Glance
-          </h2>
-          <DashboardQuickStats
-            logs={logs}
-            targetMin={targetMin}
-            targetMax={targetMax}
-            testTime={stats.testTime}
-            doseTime={stats.doseTime}
-            isAuthenticated={isAuthenticated}
-            onNewReading={loadData}
-          />
-        </motion.div>
-      )}
-
       {stats.recentAlerts.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -273,63 +250,13 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {viewMode === "overview" && doseSuggestion && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
-        >
-          <DoseSuggestionCard suggestion={doseSuggestion} />
-        </motion.div>
-      )}
-
-      {predictions.length > 0 && viewMode === "overview" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <Card>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              INR Predictions (Next 3 Days)
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-              Based on linear regression of your last 7 readings
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {predictions.map((prediction, index) => (
-                <div
-                  key={index}
-                  className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 text-center border border-blue-200 dark:border-blue-800"
-                >
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    {new Date(prediction.date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {prediction.predictedINR.toFixed(1)}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    Predicted INR
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-      )}
-
       {viewMode === "overview" && (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.2 }}
             >
               <Card title={`INR Trend - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
                 <INRChart
@@ -345,7 +272,7 @@ export default function Dashboard() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.3 }}
             >
               <Card title={`Warfarin Dose History - ${dateRangeOptions.find(o => o.value === dateRange)?.label}`}>
                 <DoseChart logs={filteredLogs} />
@@ -353,29 +280,31 @@ export default function Dashboard() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card title="Time in Therapeutic Range">
-              <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
-            </Card>
-          </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card title="Vitamin K Intake Timeline">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Track your vitamin K intake over time. Green foods affect INR levels approximately 2 days later.
+                  Hover over INR data points above to see vitamin K intake from 2 days prior.
+                </p>
+                <VitaminKChart logs={filteredLogs} />
+              </Card>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <Card title="Vitamin K Intake Timeline">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Track your vitamin K intake over time. Green foods affect INR levels approximately 2 days later.
-                Hover over INR data points above to see vitamin K intake from 2 days prior.
-              </p>
-              <VitaminKChart logs={filteredLogs} />
-            </Card>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card title="Time in Therapeutic Range">
+                <TimeInRange logs={filteredLogs} targetMin={targetMin} targetMax={targetMax} />
+              </Card>
+            </motion.div>
+          </div>
         </>
       )}
 
