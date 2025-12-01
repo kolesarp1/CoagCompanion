@@ -28,6 +28,7 @@ export default function HomePage() {
   const [testTime, setTestTime] = useState("10:00");
   const [doseTime, setDoseTime] = useState("13:00");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentLog, setCurrentLog] = useState<Log | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -72,6 +73,9 @@ export default function HomePage() {
     if (recentHomeINR && recentHomeINR.homeINR !== null) {
       const suggestion = calculateDoseSuggestion(recentHomeINR.homeINR, sortedLogs);
       setDoseSuggestion(suggestion);
+      setCurrentLog(recentHomeINR);
+    } else {
+      setCurrentLog(null);
     }
 
     // Calculate predictions
@@ -123,7 +127,12 @@ export default function HomePage() {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <DoseSuggestionCard suggestion={doseSuggestion} />
+            <DoseSuggestionCard
+              suggestion={doseSuggestion}
+              currentLog={currentLog}
+              onDoseAccepted={loadData}
+              isAuthenticated={isAuthenticated}
+            />
           </motion.div>
         )}
 
