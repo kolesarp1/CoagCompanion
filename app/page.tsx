@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { DashboardQuickStats } from "@/components/dashboard/DashboardQuickStats";
 import { DoseSuggestionCard } from "@/components/ui/DoseSuggestionCard";
+import { VitaminKSuggestionCard } from "@/components/ui/VitaminKSuggestionCard";
 import { SevenDayHistory } from "@/components/timeline/SevenDayHistory";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseStorage } from "@/lib/supabase-storage";
@@ -131,6 +132,23 @@ export default function HomePage() {
               suggestion={doseSuggestion}
               currentLog={currentLog}
               onDoseAccepted={loadData}
+              isAuthenticated={isAuthenticated}
+            />
+          </motion.div>
+        )}
+
+        {/* Vitamin K Suggestion Section */}
+        {doseSuggestion?.vitaminKSuggestion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mb-8"
+          >
+            <VitaminKSuggestionCard
+              suggestion={doseSuggestion.vitaminKSuggestion}
+              currentLog={currentLog}
+              onVitaminKAccepted={loadData}
               isAuthenticated={isAuthenticated}
             />
           </motion.div>

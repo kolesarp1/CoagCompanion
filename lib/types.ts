@@ -16,7 +16,17 @@ export interface DoseSuggestion {
   maintenanceDoseChange: string;
   reasoning: string;
   warning?: string;
-  vitaminKSuggestion?: string; // Suggested vitamin K intake for the day
+  vitaminKSuggestion?: VitaminKSuggestion; // Structured vitamin K suggestion
+}
+
+export type VitaminKLevel = 'none' | 'low' | 'medium' | 'high' | 'very_high';
+
+export interface VitaminKSuggestion {
+  suggestedLevel: VitaminKLevel;
+  inrImpact: number; // Expected INR change (positive = increase, negative = decrease)
+  delayDays: number; // Days until effect is noticeable
+  reasoning: string;
+  examples: string; // Food examples
 }
 
 export interface INRPrediction {

@@ -1,4 +1,68 @@
-import { Log, DoseSuggestion } from "./types";
+import { Log, DoseSuggestion, VitaminKSuggestion, VitaminKLevel } from "./types";
+
+/**
+ * Vitamin K INR Impact Data (based on clinical studies)
+ *
+ * Medical basis:
+ * - Vitamin K antagonizes warfarin by replenishing clotting factors II, VII, IX, X
+ * - Effect is delayed 2-3 days due to clotting factor half-lives:
+ *   Factor VII: ~6h, Factor IX: ~24h, Factor X: ~36h, Factor II: ~60-72h
+ * - Full stabilization takes 5-7 days
+ * - Higher vitamin K intake = lower INR (antagonizes warfarin)
+ * - Lower vitamin K intake = higher INR (potentiates warfarin)
+ *
+ * References:
+ * - Holbrook et al. "Evidence-based management of anticoagulant therapy" Chest 2012
+ * - Lubetsky et al. "Vitamin K intake and sensitivity to warfarin" Thromb Haemost 1999
+ */
+const VITAMIN_K_DATA: Record<VitaminKLevel, {
+  inrImpact: number;
+  delayDays: number;
+  examples: string;
+  mcgRange: string;
+}> = {
+  none: {
+    inrImpact: +0.4,    // Avoiding vitamin K can raise INR significantly
+    delayDays: 3,
+    examples: "Avoiding leafy greens entirely",
+    mcgRange: "<30 mcg/day"
+  },
+  low: {
+    inrImpact: +0.2,    // Low intake may slightly raise INR
+    delayDays: 2,
+    examples: "Small amounts of lettuce, cucumber, tomatoes",
+    mcgRange: "30-80 mcg/day"
+  },
+  medium: {
+    inrImpact: 0,       // Baseline - stable INR
+    delayDays: 0,
+    examples: "Regular salads, broccoli 2-3x/week, mixed vegetables",
+    mcgRange: "80-150 mcg/day"
+  },
+  high: {
+    inrImpact: -0.3,    // Higher intake lowers INR
+    delayDays: 2,
+    examples: "Daily spinach/kale, green smoothies, Brussels sprouts",
+    mcgRange: "150-300 mcg/day"
+  },
+  very_high: {
+    inrImpact: -0.5,    // Significant intake substantially lowers INR
+    delayDays: 2,
+    examples: "Large portions of kale, collard greens, Swiss chard daily",
+    mcgRange: ">300 mcg/day"
+  }
+};
+
+function createVitaminKSuggestion(level: VitaminKLevel, reasoning: string): VitaminKSuggestion {
+  const data = VITAMIN_K_DATA[level];
+  return {
+    suggestedLevel: level,
+    inrImpact: data.inrImpact,
+    delayDays: data.delayDays,
+    reasoning,
+    examples: data.examples
+  };
+}
 
 // Helper function to generate alternating dose pattern
 function generateAlternatingPattern(avgDose: number): { dose: number; pattern?: string } {
@@ -71,7 +135,7 @@ export function calculateDoseSuggestion(
   let maintenanceDoseChange = "No change";
   let reasoning = "";
   let warning: string | undefined;
-  let vitaminKSuggestion: string | undefined;
+  let vitaminKSuggestion: VitaminKSuggestion | undefined;
 
   if (currentINR < 1.5) {
     const suggestedAvg = avgMaintenanceDose * 1.75; // 75% increase (middle of 50-100%)
@@ -84,7 +148,10 @@ export function calculateDoseSuggestion(
     )}). Suggested one-time dose increase of 75% and maintenance increase of 15%.`;
     warning =
       "INR is critically low. Contact your doctor immediately and consider bridging with injections.";
-    vitaminKSuggestion = "Low (60-90 mcg/day) - Avoid high vitamin K foods while INR is low to allow warfarin to work more effectively.";
+    vitaminKSuggestion = createVitaminKSuggestion(
+      'low',
+      "Keep vitamin K intake low to allow warfarin to work more effectively while INR recovers."
+    );
   } else if (currentINR >= 1.5 && currentINR < 2.0) {
     const suggestedAvg = avgMaintenanceDose * 1.5; // 50% increase
     const suggestion = generateAlternatingPattern(suggestedAvg);
@@ -95,7 +162,10 @@ export function calculateDoseSuggestion(
       1
     )}). Suggested one-time dose increase of 50% and maintenance increase of 10%.`;
     warning = "Consider bridging with Fraxiparine injections until INR is in range.";
-    vitaminKSuggestion = "Low to Medium (80-120 mcg/day) - Keep intake consistent and slightly lower to allow INR to rise.";
+    vitaminKSuggestion = createVitaminKSuggestion(
+      'low',
+      "Maintain low vitamin K intake to help INR rise into therapeutic range."
+    );
   } else if (currentINR >= 2.0 && currentINR <= 3.0) {
     suggestedDose = currentMaintenanceDose;
     suggestedPattern = maintenancePattern.pattern;
@@ -103,7 +173,10 @@ export function calculateDoseSuggestion(
     reasoning = `INR is within target range (${currentINR.toFixed(
       1
     )}). Continue current maintenance dose.${suggestedPattern ? ' ' + suggestedPattern : ''}`;
-    vitaminKSuggestion = "Medium (100-150 mcg/day) - Maintain consistent daily intake to keep INR stable in therapeutic range.";
+    vitaminKSuggestion = createVitaminKSuggestion(
+      'medium',
+      "Maintain consistent daily vitamin K intake to keep INR stable in therapeutic range."
+    );
   } else if (currentINR > 3.0 && currentINR <= 4.0) {
     const suggestedAvg = avgMaintenanceDose * 0.5; // 50% decrease
     const suggestion = generateAlternatingPattern(suggestedAvg);
@@ -113,8 +186,11 @@ export function calculateDoseSuggestion(
     reasoning = `INR is above target range (${currentINR.toFixed(
       1
     )}). Suggested one-time dose reduction of 50% and maintenance decrease of 7.5%.`;
-    warning = "INR is elevated. Monitor closely and avoid high vitamin K foods.";
-    vitaminKSuggestion = "Medium to High (120-180 mcg/day) - Slightly increase vitamin K intake to help lower INR naturally. Eat more leafy greens.";
+    warning = "INR is elevated. Monitor closely.";
+    vitaminKSuggestion = createVitaminKSuggestion(
+      'high',
+      "Increase vitamin K intake to help lower INR naturally. Add more leafy greens to your diet."
+    );
   } else if (currentINR > 4.0) {
     suggestedDose = 0; // Hold dose
     suggestedPattern = undefined;
@@ -122,7 +198,10 @@ export function calculateDoseSuggestion(
     reasoning = `INR is dangerously high (${currentINR.toFixed(1)}). DO NOT take today's dose.`;
     warning =
       "⚠️ CRITICAL: INR is dangerously high. HOLD today's dose and contact your doctor IMMEDIATELY. Risk of bleeding.";
-    vitaminKSuggestion = "High (150-250 mcg/day) - Increase vitamin K intake significantly (spinach, kale, broccoli) to help lower INR. Consult doctor first.";
+    vitaminKSuggestion = createVitaminKSuggestion(
+      'very_high',
+      "Significantly increase vitamin K intake to help lower INR. Consult your doctor first."
+    );
   }
 
   return {
