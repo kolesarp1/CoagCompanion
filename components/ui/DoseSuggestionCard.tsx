@@ -168,8 +168,8 @@ export const DoseSuggestionCard: React.FC<DoseSuggestionCardProps> = ({
           </div>
         )}
 
-        {/* Dose Acceptance Section */}
-        {isAuthenticated && currentLog && (
+        {/* Dose Acceptance Section - only show if dose not yet set */}
+        {isAuthenticated && currentLog && !currentLog.warfarinDose && (
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4">
             <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
               Quick Dose Entry

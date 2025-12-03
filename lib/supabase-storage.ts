@@ -106,15 +106,35 @@ export const supabaseStorage = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const updateData: Database['public']['Tables']['logs']['Update'] = {
-      date: updatedLog.date,
-      lab_inr: updatedLog.labINR ?? null,
-      home_inr: updatedLog.homeINR ?? null,
-      warfarin_dose: updatedLog.warfarinDose ?? null,
-      injections: updatedLog.injections ?? null,
-      comment: updatedLog.comment ?? null,
-      vitamin_k_intake: updatedLog.vitaminKIntake ?? null,
-    };
+    // Only include fields that are explicitly provided in the partial update
+    const updateData: Database['public']['Tables']['logs']['Update'] = {};
+
+    if ('date' in updatedLog) {
+      updateData.date = updatedLog.date;
+    }
+    if ('labINR' in updatedLog) {
+      updateData.lab_inr = updatedLog.labINR ?? null;
+    }
+    if ('homeINR' in updatedLog) {
+      updateData.home_inr = updatedLog.homeINR ?? null;
+    }
+    if ('warfarinDose' in updatedLog) {
+      updateData.warfarin_dose = updatedLog.warfarinDose ?? null;
+    }
+    if ('injections' in updatedLog) {
+      updateData.injections = updatedLog.injections ?? null;
+    }
+    if ('comment' in updatedLog) {
+      updateData.comment = updatedLog.comment ?? null;
+    }
+    if ('vitaminKIntake' in updatedLog) {
+      updateData.vitamin_k_intake = updatedLog.vitaminKIntake ?? null;
+    }
+
+    // Skip update if no fields to update
+    if (Object.keys(updateData).length === 0) {
+      return;
+    }
 
     const { error } = await supabase
       .from('logs')
